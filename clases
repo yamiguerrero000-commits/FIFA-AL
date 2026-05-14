@@ -1,3 +1,5 @@
 class partido:
   def puntos(self):
-....
+    self.elementos=[]
+  def ingresargoles(self,dato):
+    self.elementos=[dato]
