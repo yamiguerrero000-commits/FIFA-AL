@@ -3,3 +3,4 @@ class partido:
     self.elementos=[]
   def ingresargoles(self,dato):
     self.elementos=[dato]
+#oña
