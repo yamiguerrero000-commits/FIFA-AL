@@ -1,3 +1,19 @@
+class equipo:
+    def __init__(self,identificador,pais,abreviatura,prefijo,confederacion,grupo):
+        self.identificador=identificador
+        self.pais=pais
+        self.abreviatura=abreviatura
+        self.prefijo=prefijo #prefijo telefonico
+        self.confederacion=confederacion
+        self.grupo=grupo
+        self.total_p=0 #partidos jugados
+        self.ganados=0 #partidos ganados
+        self.perdidos=0 #partidos perdidos
+        self.empate=0 #partidos empatados
+        self.goles_c=0 #goles en contra
+        self.goles_a=0 #goles a favor
+        self.puntos=0 #total de puntos
+        self.avance="Fase" #lugar del equipo
 class partido:
   def puntos(self):
     self.elementos=[]
