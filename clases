@@ -14,4 +14,5 @@ class equipo:
         self.goles_a=0 #goles a favor
         self.puntos=0 #total de puntos
         self.avance="Fase" #lugar del equipo
+
 class partido:
