@@ -15,4 +15,3 @@ class equipo:
         self.puntos=0 #total de puntos
         self.avance="Fase" #lugar del equipo
 class partido:
-#ola
