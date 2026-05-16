@@ -16,3 +16,53 @@ class equipo:
         self.avance="Fase" #lugar del equipo
 
 class partido:
+    
+    def __init__(self, fecha, hora, lugar, id1,id2):
+        self.fecha=fecha
+        self.hora=hora
+        self.lugar=lugar
+        self.identificador1=id1
+        self.identificador2=id2
+        self.goles1=0 #goles del primer equipo
+        self.goles2=0 #goles del segundo equipo
+        self.penales1=0 #penales del primer equipo
+        self.penales2=0 #penales del segundo equipo
+        self.terminado=False
+
+class torneo:
+    def __init__(self, nombre,inicio,fin):
+        self.nombre=nombre #nombre del torneo
+        self.inicio=inicio #fecha de inicio
+        self.fin=fin #fecha de fin
+        self.equipos=[]
+        self.partidos=[]
+        self.datos=False #termino de carga de datos
+
+    def registro_e(self,equipo): #registro de equipo
+        if not self.datos:
+            self.equipos.append(equipo)
+
+    def registro_p(self,partido): #registro de partido
+        if not self.datos:
+            self.partidos.append(partido)
+
+    def resultado(self, local, visitante,fecha,gl,gv,penales1,penales2):
+        for X in self.partidos:
+            if (X.identificador1==local ) and (X.identificador2==visitante) and (X.fecha==fecha) and not (X.terminado):
+                X.goles1=gl #goles del equipo local
+                X.goles2=gv #goles del equipo visitante
+                X.penales1=penales1 #penales del equipo local
+                X.penales2=penales2 #penales del equipo visitante
+                X.terminado=True #cambio automatico de registro de la clase partido
+                return "Datos guardados con exito"
+        return "Partido no encontrado o ya jugado"
+
+    def configuracion(self):
+        self.datos=True #cierre de carga de datos
+
+    def busqueda(self,identificador):
+        for X in self.equipos:
+            if X.identificador==identificador:
+                return X #retorno del equipo buscado
+        return "Sin coincidencias"
+"Sabado 16/5"
