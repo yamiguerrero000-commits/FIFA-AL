@@ -16,7 +16,6 @@ class equipo:
         self.avance="Fase" #lugar del equipo
 
 class partido:
-    
     def __init__(self, fecha, hora, lugar, id1,id2):
         self.fecha=fecha
         self.hora=hora
