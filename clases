@@ -65,4 +65,3 @@ class torneo:
             if X.identificador==identificador:
                 return X #retorno del equipo buscado
         return "Sin coincidencias"
-"Sabado 16/5"
