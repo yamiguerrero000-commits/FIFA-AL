@@ -125,6 +125,6 @@ def configurar_torneo():
         else:
             print("Opción inválida.")
 
-if __name__ == "clases.py":
+if __name__ == "__main__":
     configurar_torneo()
 
