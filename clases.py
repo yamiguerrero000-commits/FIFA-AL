@@ -105,6 +105,7 @@ class torneo:
             if X.identificador==identificador:
                 return X #retorno del equipo buscado
         return "Sin coincidencias"
+
     # Fabri modificacion, tabla de posiciones por grupo 
     def tabla_posiciones(self, grupo):
         equipos_grupo = [e for e in self.equipos if e.grupo == grupo]
@@ -136,4 +137,3 @@ class torneo:
                 if (e1.puntos < e2.puntos or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) < (e2.goles_a - e2.goles_c)) or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) == (e2.goles_a - e2.goles_c) and e1.goles_a < e2.goles_a) or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) == (e2.goles_a - e2.goles_c) and e1.goles_a == e2.goles_a and e1.prefijo < e2.prefijo)):
                     terceros[j], terceros[j + 1] = terceros[j + 1], terceros[j]
         return terceros # del equipo buscado
-        return "Sin coincidencias"
