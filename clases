@@ -135,5 +135,5 @@ class torneo:
                 e2 = terceros[j + 1]
                 if (e1.puntos < e2.puntos or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) < (e2.goles_a - e2.goles_c)) or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) == (e2.goles_a - e2.goles_c) and e1.goles_a < e2.goles_a) or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) == (e2.goles_a - e2.goles_c) and e1.goles_a == e2.goles_a and e1.prefijo < e2.prefijo)):
                     terceros[j], terceros[j + 1] = terceros[j + 1], terceros[j]
-        return terceroso del equipo buscado
+        return terceros # del equipo buscado
         return "Sin coincidencias"
