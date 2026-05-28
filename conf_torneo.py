@@ -94,6 +94,10 @@ def configurar_torneo():
                 print("Error: equipo 2 no registrado.")
                 continue
 
+            p = partido(fecha, hora, lugar, id1, id2)
+            torneo_actual.registro_p(p)
+            print(f"Partido registrado: {id1} vs {id2} en {lugar}.")
+
         elif opcion == "3":
             print("\n LISTA DE EQUIPOS ")
             if not torneo_actual.equipos:
