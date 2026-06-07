@@ -48,6 +48,19 @@ def registrar_resultado():
             equipo_local.puntos += 1
             equipo_visitante.puntos += 1
 
+        amarillas_local = int(input("Tarjetas amarillas equipo local: "))
+        rojas_local = int(input("Tarjetas rojas equipo local: "))
+        amarillas_visitante = int(input("Tarjetas amarillas equipo visitante: "))
+        rojas_visitante = int(input("Tarjetas rojas equipo visitante: "))
+        equipo_local.registrar_tarjeta+=amarillas_local
+        equipo_local.registrar_tarjeta+=rojas_local
+        equipo_visitante.registrar_tarjeta+=amarillas_visitante 
+        equipo_visitante.registrar_tarjeta+=rojas_visitante
+        if equipo_local.tarjetas_rojas>0 or equipo_local.tarjetas_amarillas%2==0:
+            equipo_local.suspendido=True
+        if equipo_visitante.tarjetas_rojas>0 or equipo_visitante.tarjetas_amarillas%2==0:
+            equipo_visitante.suspendido=True
+
 #Mostrar tabla de posiciones en fase de grupos 
 def mostrar_tabla(grupo):
     print("\n TABLA DE POSICIONES - GRUPO", grupo)
@@ -103,5 +116,3 @@ def avanzar_eliminacion_directa():
     for e in clasificados:
         print("- " + e.pais + " (Grupo " + e.grupo + ", Pts:" + str(e.puntos) + ")")
             
-
-
