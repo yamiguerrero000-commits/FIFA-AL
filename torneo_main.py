@@ -1,0 +1,1256 @@
+import tkinter as tk                  # libreria para crear ventanas y botones
+from tkinter import messagebox        # para mostrar carteles emergentes de alerta
+from tkinter import ttk               # para tablas avanzadas (Treeview)
+import os                             # para verificar si existe un archivo
+import time                           # para obtener la hora actual
+
+from conf_torneo import torneo_actual
+from clases import equipo, partido
+
+
+# PERSISTENCIA: GUARDAR Y CARGAR DATOS EN ARCHIVO DE TEXTO
+def guardar_datos():
+    # Abrimos el archivo en modo escritura. Si no existe, lo crea automaticamente
+    archivo = open("datos_torneo.txt", "w", encoding="utf-8")
+
+    # Primera linea: guardamos si la configuracion esta cerrada (True o False)
+    archivo.write(str(torneo_actual.datos) + "\n")
+
+    # Guardamos cada equipo en una linea con sus atributos separados por comas
+    # El prefijo EQUIPO nos ayuda a saber de que tipo es la linea al cargar
+    for eq in torneo_actual.equipos:
+        linea = ("EQUIPO," +
+                 str(eq.identificador) + "," +
+                 str(eq.pais) + "," +
+                 str(eq.abreviatura) + "," +
+                 str(eq.prefijo) + "," +
+                 str(eq.confederacion) + "," +
+                 str(eq.grupo) + "," +
+                 str(eq.total_p) + "," +
+                 str(eq.ganados) + "," +
+                 str(eq.empate) + "," +        # empate (no empatados)
+                 str(eq.perdidos) + "," +
+                 str(eq.goles_a) + "," +       # goles_a (no goles_f)
+                 str(eq.goles_c) + "," +
+                 str(eq.puntos) + "," +
+                 str(eq.avance) + "," +
+                 str(eq.tarjetas_amarillas) + "," +
+                 str(eq.tarjetas_rojas) + "," +
+                 str(eq.suspendido) + "\n")
+        archivo.write(linea)
+
+    # Guardamos cada partido en una linea con sus atributos
+    for p in torneo_actual.partidos:
+        linea = ("PARTIDO," +
+                 str(p.fecha) + "," +
+                 str(p.hora) + "," +
+                 str(p.lugar) + "," +
+                 str(p.identificador1) + "," +   # identificador1 (no equipo1)
+                 str(p.identificador2) + "," +   # identificador2 (no equipo2)
+                 str(p.goles1) + "," +
+                 str(p.goles2) + "," +
+                 str(p.penales1) + "," +
+                 str(p.penales2) + "," +
+                 str(p.terminado) + "," +
+                 str(p.estado) + "\n")
+        archivo.write(linea)
+
+    archivo.close()
+
+
+def cargar_datos():
+    # Verificamos si el archivo existe antes de intentar abrirlo (sin try/except)
+    if not os.path.exists("datos_torneo.txt"):
+        return   # si no existe, salimos sin hacer nada (primera vez que se ejecuta)
+
+    archivo = open("datos_torneo.txt", "r", encoding="utf-8")
+    lineas = archivo.readlines()   # leemos todas las lineas de una vez en una lista
+    archivo.close()
+
+    # Si el archivo esta vacio, salimos
+    if len(lineas) == 0:
+        return
+
+    # Primera linea: recuperamos si la configuracion estaba cerrada
+    primera_linea = lineas[0].strip()
+    if primera_linea == "True":
+        torneo_actual.datos = True
+    else:
+        torneo_actual.datos = False
+
+    # Recorremos el resto de las lineas a partir de la posicion 1
+    for i in range(1, len(lineas)):
+        linea_limpia = lineas[i].strip()
+
+        # Si la linea esta vacia la saltamos
+        if linea_limpia == "":
+            continue
+
+        # Separamos la linea por comas para obtener cada atributo
+        partes = linea_limpia.split(",")
+
+        # Segun el prefijo, reconstruimos el objeto correspondiente
+        if partes[0] == "EQUIPO":
+            # Creamos el equipo con los datos basicos (posiciones 1 al 6)
+            eq = equipo(partes[1], partes[2], partes[3],
+                        int(partes[4]), partes[5], partes[6])
+            # Restauramos las estadisticas (posiciones 7 en adelante)
+            eq.total_p            = int(partes[7])
+            eq.ganados            = int(partes[8])
+            eq.empate             = int(partes[9])    # empate, no empatados
+            eq.perdidos           = int(partes[10])
+            eq.goles_a            = int(partes[11])   # goles_a, no goles_f
+            eq.goles_c            = int(partes[12])
+            eq.puntos             = int(partes[13])
+            eq.avance             = partes[14]
+            eq.tarjetas_amarillas = int(partes[15])
+            eq.tarjetas_rojas     = int(partes[16])
+            eq.suspendido         = (partes[17] == "True")
+            # Agregamos el equipo reconstruido al torneo
+            torneo_actual.equipos.append(eq)
+
+        elif partes[0] == "PARTIDO":
+            # Creamos el partido con los datos basicos usando los parametros correctos
+            # __init__(self, fecha, hora, lugar, id1, id2)
+            p = partido(partes[1], partes[2], partes[3], partes[4], partes[5])
+            # Restauramos el resultado y estado
+            p.goles1    = int(partes[6])
+            p.goles2    = int(partes[7])
+            p.penales1  = int(partes[8])
+            p.penales2  = int(partes[9])
+            p.terminado = (partes[10] == "True")
+            p.estado    = partes[11]
+            # Agregamos el partido reconstruido al torneo
+            torneo_actual.partidos.append(p)
+
+
+# ESTRUCTURAS DE DATOS: PILA Y COLA
+
+historial_pantallas = []
+
+cola_partidos = []
+
+
+def inicializar_cola_partidos():
+    # Vaciamos la cola y la llenamos con los partidos que aun no tienen resultado
+    global cola_partidos
+    cola_partidos = []
+    for p in torneo_actual.partidos:
+        if not p.terminado:
+            cola_partidos.append(p)   # enqueue: agregamos al final de la cola
+
+
+# CLASE PRINCIPAL: APLICACION (ventana principal y navegacion)
+
+class Aplicacion:
+    def __init__(self, raiz):
+        self.raiz = raiz
+        self.raiz.title("⚽ FIFA 2026 – Panel de Control Oficial")
+        self.raiz.geometry("950x700")
+        self.raiz.configure(bg="#1a1a2e")
+
+        # Centramos la ventana en la pantalla
+        self.raiz.update_idletasks()
+        x = (self.raiz.winfo_screenwidth() // 2) - (950 // 2)
+        y = (self.raiz.winfo_screenheight() // 2) - (700 // 2)
+        self.raiz.geometry("950x700+" + str(x) + "+" + str(y))
+
+        # Configuramos el estilo visual de los Treeview (tablas)
+        estilo = ttk.Style()
+        estilo.theme_use("clam")
+        estilo.configure("Treeview",
+                         background="#16213e",
+                         fieldbackground="#16213e",
+                         foreground="white",
+                         font=("Arial", 10))
+        estilo.configure("Treeview.Heading",
+                         background="#0f3460",
+                         foreground="#f5a623",
+                         font=("Arial", 10, "bold"))
+        estilo.map("Treeview", background=[("selected", "#e94560")])
+
+        # Contenedor principal donde se van a pintar todas las pantallas
+        self.contenedor = tk.Frame(self.raiz, bg="#1a1a2e")
+        self.contenedor.pack(fill="both", expand=True)
+
+        # Cuando el usuario cierra con la X, guardamos datos primero
+        self.raiz.protocol("WM_DELETE_WINDOW", self.salir_aplicacion)
+
+        # Mostramos el menu principal al iniciar
+        self.mostrar_menu_principal()
+
+    def crear_encabezado(self, frame_destino):
+        # Este encabezado aparece en TODAS las pantallas (obligatorio segun el TP)
+        f_header = tk.Frame(frame_destino, bg="#16213e", pady=8)
+        f_header.pack(fill="x", side="top")
+
+        # Nombre de la materia
+        tk.Label(f_header,
+                 text="Algoritmos y Estructuras de Datos II  –  Facultad Politecnica  –  UNA",
+                 bg="#16213e", fg="#f5a623",
+                 font=("Arial", 10, "bold")).pack()
+
+        # Nombre de la aplicacion
+        tk.Label(f_header,
+                 text="⚽  Sistema de Gestion  –  Copa Mundial FIFA 2026",
+                 bg="#16213e", fg="white",
+                 font=("Arial", 14, "bold")).pack(pady=2)
+
+        # Reloj en tiempo real: se actualiza cada 1 segundo con after()
+        lbl_reloj = tk.Label(f_header, text="", bg="#16213e", fg="#aaaaaa",
+                             font=("Arial", 10))
+        lbl_reloj.pack()
+
+        def actualizar_reloj():
+            # Obtenemos la hora actual y la mostramos en el label
+            lbl_reloj.config(text=time.strftime("%d/%m/%Y   %H:%M:%S"))
+            # Llamamos a esta misma funcion de nuevo en 1000 ms (1 segundo)
+            self.raiz.after(1000, actualizar_reloj)
+
+        actualizar_reloj()   # arrancamos el reloj por primera vez
+
+    def limpiar_contenedor(self):
+        # Borramos todos los widgets del contenedor para pintar la nueva pantalla
+        for widget in self.contenedor.winfo_children():
+            widget.destroy()
+
+    def mostrar_menu_principal(self):
+        self.limpiar_contenedor()
+
+        # Apilamos "MENU" en la pila de historial (push)
+        historial_pantallas.append("MENU")
+
+        self.crear_encabezado(self.contenedor)
+
+        # Panel central con los botones del menu
+        panel = tk.Frame(self.contenedor, bg="#16213e", padx=60, pady=30)
+        panel.pack(pady=50)
+
+        tk.Label(panel, text="MENU PRINCIPAL",
+                 bg="#16213e", fg="#f5a623",
+                 font=("Arial", 18, "bold")).pack(pady=20)
+
+        # Boton 1: siempre disponible
+        btn1 = tk.Button(panel,
+                         text="1.  Configuracion del Torneo",
+                         width=38, height=2,
+                         bg="#0f3460", fg="white",
+                         font=("Arial", 11, "bold"),
+                         activebackground="#e94560",
+                         command=self.abrir_configuracion)
+        btn1.pack(pady=8)
+
+        # Boton 2: se deshabilita si la configuracion no esta cerrada
+        btn2 = tk.Button(panel,
+                         text="2.  Registro de Resultados",
+                         width=38, height=2,
+                         bg="#0f3460", fg="white",
+                         font=("Arial", 11, "bold"),
+                         activebackground="#e94560",
+                         command=self.abrir_resultados)
+        btn2.pack(pady=8)
+
+        # Boton 3: igual que el 2
+        btn3 = tk.Button(panel,
+                         text="3.  Emision de Informes",
+                         width=38, height=2,
+                         bg="#0f3460", fg="white",
+                         font=("Arial", 11, "bold"),
+                         activebackground="#e94560",
+                         command=self.abrir_informes)
+        btn3.pack(pady=8)
+
+        # Si la configuracion NO esta cerrada, deshabilitamos 2 y 3
+        if not torneo_actual.datos:
+            btn2.config(state="disabled", bg="#333333", fg="#777777")
+            btn3.config(state="disabled", bg="#333333", fg="#777777")
+
+        # Boton 4: salir
+        btn4 = tk.Button(panel,
+                         text="4.  Salir",
+                         width=38, height=2,
+                         bg="#e94560", fg="white",
+                         font=("Arial", 11, "bold"),
+                         activebackground="#0f3460",
+                         command=self.salir_aplicacion)
+        btn4.pack(pady=8)
+
+    def volver_atras(self):
+        # Sacamos la pantalla actual de la pila (pop)
+        if len(historial_pantallas) > 0:
+            historial_pantallas.pop()
+
+        # Miramos que habia antes en la pila
+        if len(historial_pantallas) > 0:
+            anterior = historial_pantallas[len(historial_pantallas) - 1]
+            if anterior == "MENU":
+                self.mostrar_menu_principal()
+            elif anterior == "INFORMES":
+                self.abrir_informes()
+        else:
+            self.mostrar_menu_principal()
+
+    def abrir_configuracion(self):
+        self.limpiar_contenedor()
+        PantallaConfiguracion(self.contenedor, self)
+
+    def abrir_resultados(self):
+        self.limpiar_contenedor()
+        PantallaResultados(self.contenedor, self)
+
+    def abrir_informes(self):
+        self.limpiar_contenedor()
+        PantallaInformes(self.contenedor, self)
+
+    def salir_aplicacion(self):
+        # Preguntamos al usuario si quiere guardar antes de cerrar
+        confirmar = messagebox.askyesno("Salir",
+                                        "Desea guardar los datos y cerrar el sistema?")
+        if confirmar:
+            guardar_datos()
+            self.raiz.destroy()
+
+
+# PANTALLA 1: CONFIGURACION DEL TORNEO
+class PantallaConfiguracion:
+    def __init__(self, contenedor, app):
+        self.contenedor = contenedor
+        self.app = app
+
+        # Apilamos esta pantalla en el historial (push)
+        historial_pantallas.append("CONFIGURACION")
+
+        self.app.crear_encabezado(self.contenedor)
+
+        # Frame principal de esta pantalla
+        f_cuerpo = tk.Frame(self.contenedor, bg="#1a1a2e")
+        f_cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
+
+        # FORMULARIO DE EQUIPOS (lado izquierdo)
+        f_equipo = tk.LabelFrame(f_cuerpo,
+                                  text="  Registrar Equipo  ",
+                                  bg="#16213e", fg="#f5a623",
+                                  font=("Arial", 11, "bold"))
+        f_equipo.place(x=5, y=5, width=455, height=240)
+
+        # Fila 0: ID y Pais
+        tk.Label(f_equipo, text="ID:", bg="#16213e", fg="white").grid(row=0, column=0, padx=5, pady=6, sticky="w")
+        self.ent_id = tk.Entry(f_equipo, width=12)
+        self.ent_id.grid(row=0, column=1, padx=5, pady=6, sticky="w")
+
+        tk.Label(f_equipo, text="Pais:", bg="#16213e", fg="white").grid(row=0, column=2, padx=5, pady=6, sticky="w")
+        self.ent_pais = tk.Entry(f_equipo, width=18)
+        self.ent_pais.grid(row=0, column=3, padx=5, pady=6, sticky="w")
+
+        # Fila 1: Abreviatura y Prefijo
+        tk.Label(f_equipo, text="Abreviatura:", bg="#16213e", fg="white").grid(row=1, column=0, padx=5, pady=6, sticky="w")
+        self.ent_abrev = tk.Entry(f_equipo, width=12)
+        self.ent_abrev.grid(row=1, column=1, padx=5, pady=6, sticky="w")
+
+        tk.Label(f_equipo, text="Prefijo Tel:", bg="#16213e", fg="white").grid(row=1, column=2, padx=5, pady=6, sticky="w")
+        self.ent_pref = tk.Entry(f_equipo, width=18)
+        self.ent_pref.grid(row=1, column=3, padx=5, pady=6, sticky="w")
+
+        # Fila 2: Confederacion (lista desplegable) y Grupo (lista desplegable)
+        tk.Label(f_equipo, text="Confederacion:", bg="#16213e", fg="white").grid(row=2, column=0, padx=5, pady=6, sticky="w")
+        self.var_conf = tk.StringVar(f_equipo)
+        self.var_conf.set("UEFA")
+        opciones_conf = ["UEFA", "CONMEBOL", "AFC", "CAF", "CONCACAF", "OFC"]
+        tk.OptionMenu(f_equipo, self.var_conf, *opciones_conf).grid(row=2, column=1, padx=5, pady=6, sticky="w")
+
+        tk.Label(f_equipo, text="Grupo:", bg="#16213e", fg="white").grid(row=2, column=2, padx=5, pady=6, sticky="w")
+        self.var_grupo = tk.StringVar(f_equipo)
+        self.var_grupo.set("A")
+        opciones_grupo = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+        tk.OptionMenu(f_equipo, self.var_grupo, *opciones_grupo).grid(row=2, column=3, padx=5, pady=6, sticky="w")
+
+        # Boton guardar equipo
+        tk.Button(f_equipo, text="Guardar Equipo",
+                  bg="#0f3460", fg="white", font=("Arial", 10, "bold"),
+                  command=self.guardar_equipo).grid(row=3, column=0, columnspan=4, pady=12)
+
+        # FORMULARIO DE PARTIDOS (lado derecho)
+        f_partido = tk.LabelFrame(f_cuerpo,
+                                   text="  Registrar Partido  ",
+                                   bg="#16213e", fg="#f5a623",
+                                   font=("Arial", 11, "bold"))
+        f_partido.place(x=475, y=5, width=455, height=240)
+
+        # Fila 0: Fecha y Hora
+        tk.Label(f_partido, text="Fecha (AAAA-MM-DD):", bg="#16213e", fg="white").grid(row=0, column=0, padx=5, pady=6, sticky="w")
+        self.ent_fec = tk.Entry(f_partido, width=13)
+        self.ent_fec.grid(row=0, column=1, padx=5, pady=6, sticky="w")
+
+        tk.Label(f_partido, text="Hora (HH:MM):", bg="#16213e", fg="white").grid(row=0, column=2, padx=5, pady=6, sticky="w")
+        self.ent_hor = tk.Entry(f_partido, width=10)
+        self.ent_hor.grid(row=0, column=3, padx=5, pady=6, sticky="w")
+
+        # Fila 1: Lugar
+        tk.Label(f_partido, text="Lugar:", bg="#16213e", fg="white").grid(row=1, column=0, padx=5, pady=6, sticky="w")
+        self.ent_lug = tk.Entry(f_partido, width=38)
+        self.ent_lug.grid(row=1, column=1, columnspan=3, padx=5, pady=6, sticky="w")
+
+        # Fila 2: Equipo 1 y Equipo 2 (listas desplegables con los equipos registrados)
+        tk.Label(f_partido, text="Equipo 1:", bg="#16213e", fg="white").grid(row=2, column=0, padx=5, pady=6, sticky="w")
+        self.var_e1 = tk.StringVar(f_partido)
+        self.menu_e1 = tk.OptionMenu(f_partido, self.var_e1, "")
+        self.menu_e1.grid(row=2, column=1, padx=5, pady=6, sticky="w")
+
+        tk.Label(f_partido, text="Equipo 2:", bg="#16213e", fg="white").grid(row=2, column=2, padx=5, pady=6, sticky="w")
+        self.var_e2 = tk.StringVar(f_partido)
+        self.menu_e2 = tk.OptionMenu(f_partido, self.var_e2, "")
+        self.menu_e2.grid(row=2, column=3, padx=5, pady=6, sticky="w")
+
+        # Boton guardar partido
+        tk.Button(f_partido, text="Guardar Partido",
+                  bg="#0f3460", fg="white", font=("Arial", 10, "bold"),
+                  command=self.guardar_partido).grid(row=3, column=0, columnspan=4, pady=12)
+
+        # TABLAS DE LISTADO (Treeview)
+        tk.Label(f_cuerpo, text="Equipos Registrados",
+                 bg="#1a1a2e", fg="white",
+                 font=("Arial", 10, "bold")).place(x=5, y=255)
+
+        # Tabla de equipos
+        self.tabla_e = ttk.Treeview(f_cuerpo,
+                                     columns=("ID", "Pais", "Abrev", "Grupo", "Conf"),
+                                     show="headings", height=6)
+        for col, ancho in [("ID", 60), ("Pais", 160), ("Abrev", 70), ("Grupo", 60), ("Conf", 100)]:
+            self.tabla_e.heading(col, text=col)
+            self.tabla_e.column(col, width=ancho, anchor="center")
+        self.tabla_e.place(x=5, y=278, width=455, height=145)
+
+        tk.Label(f_cuerpo, text="Partidos Programados",
+                 bg="#1a1a2e", fg="white",
+                 font=("Arial", 10, "bold")).place(x=475, y=255)
+
+        # Tabla de partidos
+        self.tabla_p = ttk.Treeview(f_cuerpo,
+                                     columns=("Fecha", "Hora", "Lugar", "Eq1", "Eq2"),
+                                     show="headings", height=6)
+        for col, ancho in [("Fecha", 90), ("Hora", 55), ("Lugar", 130), ("Eq1", 80), ("Eq2", 80)]:
+            self.tabla_p.heading(col, text=col)
+            self.tabla_p.column(col, width=ancho, anchor="center")
+        self.tabla_p.place(x=475, y=278, width=455, height=145)
+
+        # BOTONES INFERIORES
+        self.btn_cerrar = tk.Button(f_cuerpo,
+                                     text="🔒  Cerrar Configuracion del Torneo",
+                                     bg="#e94560", fg="white",
+                                     font=("Arial", 11, "bold"),
+                                     command=self.cerrar_configuracion)
+        self.btn_cerrar.place(x=280, y=440, width=350, height=38)
+
+        tk.Button(f_cuerpo,
+                  text="⬅  Volver al Menu",
+                  bg="#0f3460", fg="white",
+                  font=("Arial", 10),
+                  command=self.app.volver_atras).place(x=390, y=492, width=160, height=30)
+
+        # Cargamos los datos iniciales en tablas y desplegables
+        self.actualizar_tablas()
+        self.actualizar_desplegables()
+
+        # Si la config ya estaba cerrada, bloqueamos los formularios
+        if torneo_actual.datos:
+            self.bloquear_formularios()
+
+    def bloquear_formularios(self):
+        # Cambiamos el boton para indicar que ya esta cerrado
+        self.btn_cerrar.config(state="disabled",
+                                text="Configuracion Cerrada",
+                                bg="#333333")
+
+    def actualizar_desplegables(self):
+        # Actualizamos las listas desplegables de equipos con los IDs actuales
+        lista_ids = []
+        for eq in torneo_actual.equipos:
+            lista_ids.append(eq.identificador)
+
+        if len(lista_ids) > 0:
+            self.var_e1.set(lista_ids[0])
+            self.var_e2.set(lista_ids[0])
+
+            # Reconfiguramos el menu 1
+            menu = self.menu_e1["menu"]
+            menu.delete(0, "end")
+            for item in lista_ids:
+                menu.add_command(label=item, command=tk._setit(self.var_e1, item))
+
+            # Reconfiguramos el menu 2
+            menu2 = self.menu_e2["menu"]
+            menu2.delete(0, "end")
+            for item in lista_ids:
+                menu2.add_command(label=item, command=tk._setit(self.var_e2, item))
+
+    def actualizar_tablas(self):
+        # Borramos lo que habia en las tablas
+        for item in self.tabla_e.get_children():
+            self.tabla_e.delete(item)
+        for item in self.tabla_p.get_children():
+            self.tabla_p.delete(item)
+
+        # Insertamos los equipos actuales
+        for eq in torneo_actual.equipos:
+            self.tabla_e.insert("", "end",
+                                 values=(eq.identificador, eq.pais,
+                                         eq.abreviatura, eq.grupo, eq.confederacion))
+
+        # Insertamos los partidos actuales
+        for p in torneo_actual.partidos:
+            self.tabla_p.insert("", "end",
+                                 values=(p.fecha, p.hora, p.lugar,
+                                         p.identificador1, p.identificador2))
+
+    def guardar_equipo(self):
+        # No se puede agregar si la configuracion esta cerrada
+        if torneo_actual.datos:
+            messagebox.showerror("Error", "La configuracion ya esta cerrada.")
+            return
+
+        # Obtenemos los valores de los campos
+        v_id    = self.ent_id.get().strip()
+        v_pais  = self.ent_pais.get().strip()
+        v_abrev = self.ent_abrev.get().strip().upper()
+        v_pref  = self.ent_pref.get().strip()
+
+        # Validacion: todos los campos son obligatorios
+        if v_id == "" or v_pais == "" or v_abrev == "" or v_pref == "":
+            messagebox.showerror("Error", "Todos los campos son obligatorios.")
+            return
+
+        # Validacion: el prefijo debe ser un numero
+        if not v_pref.isdigit():
+            messagebox.showerror("Error", "El prefijo telefonico debe ser un numero.")
+            return
+
+        # Validacion: la abreviatura debe tener exactamente 3 letras
+        if len(v_abrev) != 3 or not v_abrev.isalpha():
+            messagebox.showerror("Error", "La abreviatura debe tener exactamente 3 letras.")
+            return
+
+        # Validacion: el ID no puede estar repetido
+        for eq in torneo_actual.equipos:
+            if eq.identificador == v_id:
+                messagebox.showerror("Error", "Ya existe un equipo con ese identificador.")
+                return
+
+        # Creamos el objeto equipo y lo registramos en el torneo
+        nuevo = equipo(v_id, v_pais, v_abrev, int(v_pref),
+                       self.var_conf.get(), self.var_grupo.get())
+        torneo_actual.registro_e(nuevo)
+
+        # Limpiamos los campos del formulario
+        self.ent_id.delete(0, "end")
+        self.ent_pais.delete(0, "end")
+        self.ent_abrev.delete(0, "end")
+        self.ent_pref.delete(0, "end")
+
+        # Actualizamos tablas y desplegables
+        self.actualizar_tablas()
+        self.actualizar_desplegables()
+        messagebox.showinfo("Exito", "Equipo " + v_pais + " registrado correctamente.")
+
+    def guardar_partido(self):
+        # No se puede agregar si la configuracion esta cerrada
+        if torneo_actual.datos:
+            messagebox.showerror("Error", "La configuracion ya esta cerrada.")
+            return
+
+        v_fec = self.ent_fec.get().strip()
+        v_hor = self.ent_hor.get().strip()
+        v_lug = self.ent_lug.get().strip()
+        v_e1  = self.var_e1.get()
+        v_e2  = self.var_e2.get()
+
+        # Validacion: todos los campos son obligatorios
+        if v_fec == "" or v_hor == "" or v_lug == "" or v_e1 == "" or v_e2 == "":
+            messagebox.showerror("Error", "Todos los campos son obligatorios.")
+            return
+
+        # Validacion: los dos equipos deben ser distintos
+        if v_e1 == v_e2:
+            messagebox.showerror("Error", "Los dos equipos deben ser distintos.")
+            return
+
+        # Creamos el partido con los parametros correctos: (fecha, hora, lugar, id1, id2)
+        nuevo_p = partido(v_fec, v_hor, v_lug, v_e1, v_e2)
+        torneo_actual.registro_p(nuevo_p)
+
+        # Limpiamos los campos
+        self.ent_fec.delete(0, "end")
+        self.ent_hor.delete(0, "end")
+        self.ent_lug.delete(0, "end")
+
+        self.actualizar_tablas()
+        messagebox.showinfo("Exito", "Partido registrado correctamente.")
+
+    def cerrar_configuracion(self):
+        # Necesitamos al menos 2 equipos para cerrar
+        if len(torneo_actual.equipos) < 2:
+            messagebox.showerror("Error", "Debe registrar al menos 2 equipos antes de cerrar.")
+            return
+
+        # Pedimos confirmacion antes de cerrar (accion irreversible)
+        confirmar = messagebox.askyesno("Confirmacion",
+                                         "Esta seguro de cerrar la configuracion? Esta accion no se puede revertir.")
+        if confirmar:
+            torneo_actual.configuracion()   # cierra la configuracion en el modelo
+            self.bloquear_formularios()
+            messagebox.showinfo("Exito", "Configuracion cerrada. Ya puede registrar resultados e informes.")
+
+
+# PANTALLA 2: REGISTRO DE RESULTADOS
+class PantallaResultados:
+    def __init__(self, contenedor, app):
+        self.contenedor = contenedor
+        self.app = app
+
+        # Apilamos esta pantalla en el historial (push)
+        historial_pantallas.append("RESULTADOS")
+
+        self.app.crear_encabezado(self.contenedor)
+
+        # Inicializamos la cola con los partidos pendientes
+        inicializar_cola_partidos()
+
+        f_cuerpo = tk.Frame(self.contenedor, bg="#1a1a2e")
+        f_cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
+
+        # Titulo de la cola
+        tk.Label(f_cuerpo,
+                 text="COLA DE PARTIDOS PENDIENTES  (se procesan en orden de registro)",
+                 bg="#1a1a2e", fg="#f5a623",
+                 font=("Arial", 11, "bold")).pack(anchor="w", pady=5)
+
+        # Tabla que muestra la cola de partidos
+        self.tabla_cola = ttk.Treeview(f_cuerpo,
+                                        columns=("Fecha", "Hora", "Lugar", "Local", "Visitante", "Estado"),
+                                        show="headings", height=5)
+        for col, ancho in [("Fecha", 95), ("Hora", 60), ("Lugar", 160), ("Local", 100), ("Visitante", 100), ("Estado", 110)]:
+            self.tabla_cola.heading(col, text=col)
+            self.tabla_cola.column(col, width=ancho, anchor="center")
+        self.tabla_cola.pack(fill="x", pady=5)
+
+        # Al hacer clic en una fila de la cola, se activan los campos de goles
+        self.tabla_cola.bind("<<TreeviewSelect>>", self.seleccionar_partido)
+
+        # Frame del formulario de marcador (deshabilitado hasta que se seleccione un partido)
+        f_marcador = tk.LabelFrame(f_cuerpo,
+                                    text="  Ingresar Marcador del Partido Seleccionado  ",
+                                    bg="#16213e", fg="white",
+                                    font=("Arial", 10, "bold"))
+        f_marcador.pack(fill="x", pady=12, ipady=8)
+
+        # Label que muestra que partido esta seleccionado
+        self.lbl_vs = tk.Label(f_marcador,
+                                text="Seleccione un partido de la cola de arriba",
+                                bg="#16213e", fg="#f5a623",
+                                font=("Arial", 12, "bold"))
+        self.lbl_vs.pack(pady=8)
+
+        # Frame para los campos de goles
+        f_goles = tk.Frame(f_marcador, bg="#16213e")
+        f_goles.pack()
+
+        tk.Label(f_goles, text="Goles Local:", bg="#16213e", fg="white").grid(row=0, column=0, padx=10, pady=5)
+        self.ent_gl = tk.Entry(f_goles, width=8, state="disabled")
+        self.ent_gl.grid(row=0, column=1, padx=10, pady=5)
+
+        tk.Label(f_goles, text="Goles Visitante:", bg="#16213e", fg="white").grid(row=0, column=2, padx=10, pady=5)
+        self.ent_gv = tk.Entry(f_goles, width=8, state="disabled")
+        self.ent_gv.grid(row=0, column=3, padx=10, pady=5)
+
+        tk.Label(f_goles, text="Penales Local:", bg="#16213e", fg="white").grid(row=1, column=0, padx=10, pady=5)
+        self.ent_pl = tk.Entry(f_goles, width=8, state="disabled")
+        self.ent_pl.grid(row=1, column=1, padx=10, pady=5)
+
+        tk.Label(f_goles, text="Penales Visitante:", bg="#16213e", fg="white").grid(row=1, column=2, padx=10, pady=5)
+        self.ent_pv = tk.Entry(f_goles, width=8, state="disabled")
+        self.ent_pv.grid(row=1, column=3, padx=10, pady=5)
+
+        # Frame para los botones de accion
+        f_botones = tk.Frame(f_cuerpo, bg="#1a1a2e")
+        f_botones.pack(pady=10)
+
+        self.btn_registrar = tk.Button(f_botones,
+                                        text="⚽  Registrar Resultado",
+                                        bg="#0f3460", fg="white",
+                                        font=("Arial", 10, "bold"),
+                                        state="disabled",
+                                        command=self.registrar_marcador)
+        self.btn_registrar.grid(row=0, column=0, padx=10)
+
+        self.btn_suspender = tk.Button(f_botones,
+                                        text="⛔  Suspender Partido",
+                                        bg="#e94560", fg="white",
+                                        state="disabled",
+                                        command=self.suspender_partido)
+        self.btn_suspender.grid(row=0, column=1, padx=10)
+
+        self.btn_reanudar = tk.Button(f_botones,
+                                       text="🔄  Reanudar Partido",
+                                       bg="#0f3460", fg="white",
+                                       state="disabled",
+                                       command=self.reanudar_partido)
+        self.btn_reanudar.grid(row=0, column=2, padx=10)
+
+        tk.Button(f_cuerpo,
+                  text="⬅  Volver al Menu",
+                  bg="#0f3460", fg="white",
+                  command=self.app.volver_atras).pack(pady=12)
+
+        # Variable que guarda el partido actualmente seleccionado
+        self.partido_seleccionado = None
+
+        # Cargamos la tabla con la cola actual
+        self.actualizar_tabla_cola()
+
+    def actualizar_tabla_cola(self):
+        # Borramos las filas actuales de la tabla
+        for item in self.tabla_cola.get_children():
+            self.tabla_cola.delete(item)
+        # Insertamos cada partido de la cola
+        for p in cola_partidos:
+            self.tabla_cola.insert("", "end",
+                                    values=(p.fecha, p.hora, p.lugar,
+                                            p.identificador1, p.identificador2,
+                                            p.estado))
+
+    def seleccionar_partido(self, evento):
+        # Obtenemos la fila seleccionada en la tabla
+        seleccion = self.tabla_cola.selection()
+        if not seleccion:
+            return
+
+        valores = self.tabla_cola.item(seleccion[0], "values")
+        v_fec = valores[0]
+        v_hor = valores[1]
+        v_id1 = valores[3]
+        v_id2 = valores[4]
+
+        # Buscamos el objeto partido real que coincide con esos datos
+        self.partido_seleccionado = None
+        for p in torneo_actual.partidos:
+            if (p.fecha == v_fec and p.hora == v_hor and
+                    p.identificador1 == v_id1 and p.identificador2 == v_id2):
+                self.partido_seleccionado = p
+
+        # Si lo encontramos, mostramos su nombre y habilitamos los campos
+        if self.partido_seleccionado:
+            self.lbl_vs.config(text=self.partido_seleccionado.identificador1 +
+                                    "  VS  " +
+                                    self.partido_seleccionado.identificador2)
+            self.ent_gl.config(state="normal")
+            self.ent_gv.config(state="normal")
+            self.ent_pl.config(state="normal")
+            self.ent_pv.config(state="normal")
+            self.btn_registrar.config(state="normal")
+            self.btn_suspender.config(state="normal")
+            self.btn_reanudar.config(state="normal")
+
+    def registrar_marcador(self):
+        if not self.partido_seleccionado:
+            return
+
+        # Verificamos que el partido seleccionado sea el primero de la cola (orden FIFO)
+        if len(cola_partidos) == 0 or self.partido_seleccionado != cola_partidos[0]:
+            messagebox.showwarning("Atencion",
+                                   "Debe registrar los resultados en orden. Seleccione el primero de la cola.")
+            return
+
+        # Obtenemos los goles ingresados
+        gl_str = self.ent_gl.get().strip()
+        gv_str = self.ent_gv.get().strip()
+        pl_str = self.ent_pl.get().strip()
+        pv_str = self.ent_pv.get().strip()
+
+        # Validacion: todos los campos son obligatorios
+        if gl_str == "" or gv_str == "" or pl_str == "" or pv_str == "":
+            messagebox.showerror("Error", "Complete todos los campos de goles y penales.")
+            return
+
+        # Validacion: deben ser numeros enteros
+        if not gl_str.isdigit() or not gv_str.isdigit() or not pl_str.isdigit() or not pv_str.isdigit():
+            messagebox.showerror("Error", "Los goles y penales deben ser numeros enteros.")
+            return
+
+        gl = int(gl_str)
+        gv = int(gv_str)
+        pl = int(pl_str)
+        pv = int(pv_str)
+
+        # Llamamos al metodo resultado() de la clase torneo (compañero 1)
+        mensaje = torneo_actual.resultado(
+            self.partido_seleccionado.identificador1,
+            self.partido_seleccionado.identificador2,
+            self.partido_seleccionado.fecha,
+            gl, gv, pl, pv
+        )
+
+        if mensaje == "Datos guardados con exito":
+            # Buscamos los objetos equipo para actualizar sus estadisticas
+            # (igual que lo hacia registro_resultado.py del compañero 3)
+            eq_local     = torneo_actual.busqueda(self.partido_seleccionado.identificador1)
+            eq_visitante = torneo_actual.busqueda(self.partido_seleccionado.identificador2)
+
+            # Sumamos partidos jugados a ambos
+            eq_local.total_p     += 1
+            eq_visitante.total_p += 1
+
+            # Actualizamos goles a favor y en contra
+            eq_local.goles_a     += gl
+            eq_local.goles_c     += gv
+            eq_visitante.goles_a += gv
+            eq_visitante.goles_c += gl
+
+            # Segun el resultado actualizamos ganados, perdidos, empates y puntos
+            if gl > gv:
+                eq_local.ganados     += 1
+                eq_visitante.perdidos += 1
+                eq_local.puntos      += 3
+            elif gv > gl:
+                eq_visitante.ganados  += 1
+                eq_local.perdidos    += 1
+                eq_visitante.puntos  += 3
+            else:
+                eq_local.empate      += 1
+                eq_visitante.empate  += 1
+                eq_local.puntos      += 1
+                eq_visitante.puntos  += 1
+
+            # OPERACION DE COLA: sacamos el partido del frente (dequeue)
+            cola_partidos.pop(0)
+
+            # Limpiamos y deshabilitamos los campos
+            self.ent_gl.delete(0, "end")
+            self.ent_gv.delete(0, "end")
+            self.ent_pl.delete(0, "end")
+            self.ent_pv.delete(0, "end")
+            self.ent_gl.config(state="disabled")
+            self.ent_gv.config(state="disabled")
+            self.ent_pl.config(state="disabled")
+            self.ent_pv.config(state="disabled")
+            self.btn_registrar.config(state="disabled")
+            self.btn_suspender.config(state="disabled")
+            self.btn_reanudar.config(state="disabled")
+            self.lbl_vs.config(text="Seleccione un partido de la cola de arriba")
+            self.partido_seleccionado = None
+
+            self.actualizar_tabla_cola()
+            messagebox.showinfo("Exito", "Resultado registrado y partido removido de la cola.")
+        else:
+            messagebox.showerror("Error", mensaje)
+
+    def suspender_partido(self):
+        if self.partido_seleccionado:
+            self.partido_seleccionado.suspender()   # metodo de la clase partido
+            self.actualizar_tabla_cola()
+            messagebox.showinfo("Estado", "Partido marcado como SUSPENDIDO.")
+
+    def reanudar_partido(self):
+        if self.partido_seleccionado:
+            self.partido_seleccionado.reanudar()    # metodo de la clase partido
+            self.actualizar_tabla_cola()
+            messagebox.showinfo("Estado", "Partido marcado como REPROGRAMADO.")
+
+
+# PANTALLA 3: EMISION DE INFORMES (5 informes)
+
+class PantallaInformes:
+    def __init__(self, contenedor, app):
+        self.contenedor = contenedor
+        self.app = app
+
+        # Apilamos solo si no estamos ya en INFORMES
+        if len(historial_pantallas) == 0 or historial_pantallas[len(historial_pantallas) - 1] != "INFORMES":
+            historial_pantallas.append("INFORMES")
+
+        self.app.crear_encabezado(self.contenedor)
+
+        # Barra de botones para elegir el informe
+        f_barra = tk.Frame(self.contenedor, bg="#16213e", pady=6)
+        f_barra.pack(fill="x")
+
+        tk.Button(f_barra, text="INF 1\nPartidos x Fecha",
+                  width=14, bg="#0f3460", fg="white",
+                  command=self.mostrar_informe1).grid(row=0, column=0, padx=4)
+
+        tk.Button(f_barra, text="INF 2\nPosiciones Grupo",
+                  width=14, bg="#0f3460", fg="white",
+                  command=self.mostrar_informe2).grid(row=0, column=1, padx=4)
+
+        tk.Button(f_barra, text="INF 3\nHistorial Equipo",
+                  width=14, bg="#0f3460", fg="white",
+                  command=self.mostrar_informe3).grid(row=0, column=2, padx=4)
+
+        tk.Button(f_barra, text="INF 4\nProximo Partido",
+                  width=14, bg="#0f3460", fg="white",
+                  command=self.mostrar_informe4).grid(row=0, column=3, padx=4)
+
+        tk.Button(f_barra, text="INF 5\nClasif. General",
+                  width=14, bg="#0f3460", fg="white",
+                  command=self.mostrar_informe5).grid(row=0, column=4, padx=4)
+
+        tk.Button(f_barra, text="⬅ Volver",
+                  width=10, bg="#e94560", fg="white",
+                  font=("Arial", 10, "bold"),
+                  command=self.app.volver_atras).grid(row=0, column=5, padx=20)
+
+        # Zona donde se renderiza el informe seleccionado
+        self.f_zona = tk.Frame(self.contenedor, bg="#1a1a2e")
+        self.f_zona.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Mostramos el informe 1 por defecto
+        self.mostrar_informe1()
+
+    def limpiar_zona(self):
+        # Borramos el contenido anterior del area de informes
+        for widget in self.f_zona.winfo_children():
+            widget.destroy()
+
+    # INFORME 1: partidos de una fecha especifica
+    def mostrar_informe1(self):
+        self.limpiar_zona()
+
+        tk.Label(self.f_zona,
+                 text="INFORME 1 – PARTIDOS POR FECHA",
+                 bg="#1a1a2e", fg="#f5a623",
+                 font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
+
+        # Fila de busqueda
+        f_busq = tk.Frame(self.f_zona, bg="#1a1a2e")
+        f_busq.pack(anchor="w", pady=5)
+
+        tk.Label(f_busq, text="Fecha (AAAA-MM-DD):", bg="#1a1a2e", fg="white").pack(side="left", padx=5)
+        ent_fecha = tk.Entry(f_busq, width=14)
+        ent_fecha.pack(side="left", padx=5)
+
+        # Tabla de resultados
+        tabla = ttk.Treeview(self.f_zona,
+                              columns=("Hora", "Local", "Visitante", "Lugar", "Estado", "Resultado"),
+                              show="headings")
+        for col, ancho in [("Hora", 60), ("Local", 110), ("Visitante", 110), ("Lugar", 180), ("Estado", 100), ("Resultado", 120)]:
+            tabla.heading(col, text=col)
+            tabla.column(col, width=ancho, anchor="center")
+
+        # Scrollbar vertical para la tabla
+        scroll = tk.Scrollbar(self.f_zona, orient="vertical", command=tabla.yview)
+        tabla.configure(yscrollcommand=scroll.set)
+        tabla.pack(side="left", fill="both", expand=True, pady=10)
+        scroll.pack(side="right", fill="y", pady=10)
+
+        def buscar():
+            # Limpiamos la tabla antes de buscar
+            for item in tabla.get_children():
+                tabla.delete(item)
+            fecha_b = ent_fecha.get().strip()
+            encontrados = 0
+            for p in torneo_actual.partidos:
+                if p.fecha == fecha_b:
+                    encontrados += 1
+                    resultado = str(p.goles1) + " - " + str(p.goles2)
+                    if p.penales1 > 0 or p.penales2 > 0:
+                        resultado += " (Pen: " + str(p.penales1) + "-" + str(p.penales2) + ")"
+                    tabla.insert("", "end",
+                                  values=(p.hora, p.identificador1, p.identificador2,
+                                          p.lugar, p.estado, resultado))
+            if encontrados == 0:
+                messagebox.showinfo("Sin resultados", "No hay partidos para la fecha ingresada.")
+
+        tk.Button(f_busq, text="Buscar",
+                  bg="#0f3460", fg="white",
+                  command=buscar).pack(side="left", padx=8)
+
+    # INFORME 2: tabla de posiciones de un grupo
+    def mostrar_informe2(self):
+        self.limpiar_zona()
+
+        tk.Label(self.f_zona,
+                 text="INFORME 2 – TABLA DE POSICIONES DE UN GRUPO",
+                 bg="#1a1a2e", fg="#f5a623",
+                 font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
+
+        f_ctrl = tk.Frame(self.f_zona, bg="#1a1a2e")
+        f_ctrl.pack(anchor="w", pady=5)
+
+        tk.Label(f_ctrl, text="Grupo:", bg="#1a1a2e", fg="white").pack(side="left", padx=5)
+        var_g = tk.StringVar(f_ctrl)
+        var_g.set("A")
+        opciones = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+        tk.OptionMenu(f_ctrl, var_g, *opciones).pack(side="left", padx=5)
+
+        # Tabla con columnas de estadisticas
+        tabla = ttk.Treeview(self.f_zona,
+                              columns=("Pos", "Pais", "PJ", "G", "E", "P", "GF", "GC", "DG", "Pts"),
+                              show="headings")
+        for col, ancho in [("Pos", 40), ("Pais", 150), ("PJ", 45), ("G", 40),
+                            ("E", 40), ("P", 40), ("GF", 45), ("GC", 45), ("DG", 50), ("Pts", 50)]:
+            tabla.heading(col, text=col)
+            tabla.column(col, width=ancho, anchor="center")
+        tabla.column("Pais", anchor="w")
+        tabla.pack(fill="both", expand=True, pady=10)
+
+        def consultar():
+            for item in tabla.get_children():
+                tabla.delete(item)
+            # Llamamos al metodo tabla_posiciones del compañero 1 (usa bubble sort)
+            lista = torneo_actual.tabla_posiciones(var_g.get())
+            pos = 1
+            for eq in lista:
+                dg = eq.goles_a - eq.goles_c
+                tabla.insert("", "end",
+                              values=(pos, eq.pais, eq.total_p, eq.ganados,
+                                      eq.empate, eq.perdidos,
+                                      eq.goles_a, eq.goles_c, dg, eq.puntos))
+                pos += 1
+
+        tk.Button(f_ctrl, text="Consultar",
+                  bg="#0f3460", fg="white",
+                  command=consultar).pack(side="left", padx=8)
+        consultar()   # cargamos el grupo A por defecto al abrir
+
+    # INFORME 3: historial de partidos de un equipo
+    def mostrar_informe3(self):
+        self.limpiar_zona()
+
+        tk.Label(self.f_zona,
+                 text="INFORME 3 – HISTORIAL Y AVANCE DE UN EQUIPO",
+                 bg="#1a1a2e", fg="#f5a623",
+                 font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
+
+        # Armamos la lista de paises para el desplegable
+        lista_paises = []
+        for eq in torneo_actual.equipos:
+            lista_paises.append(eq.pais)
+
+        if len(lista_paises) == 0:
+            tk.Label(self.f_zona,
+                     text="No hay equipos registrados en el sistema.",
+                     fg="red", bg="#1a1a2e").pack()
+            return
+
+        f_ctrl = tk.Frame(self.f_zona, bg="#1a1a2e")
+        f_ctrl.pack(anchor="w", pady=5)
+
+        tk.Label(f_ctrl, text="Equipo:", bg="#1a1a2e", fg="white").pack(side="left", padx=5)
+        var_e = tk.StringVar(f_ctrl)
+        var_e.set(lista_paises[0])
+        tk.OptionMenu(f_ctrl, var_e, *lista_paises).pack(side="left", padx=5)
+
+        # Caja de texto para mostrar el historial
+        txt = tk.Text(self.f_zona, bg="#16213e", fg="white",
+                       font=("Courier", 10), state="disabled")
+        scroll = tk.Scrollbar(self.f_zona, orient="vertical", command=txt.yview)
+        txt.configure(yscrollcommand=scroll.set)
+        txt.pack(side="left", fill="both", expand=True, pady=10)
+        scroll.pack(side="right", fill="y", pady=10)
+
+        def ver_historial():
+            # Habilitamos para escribir, borramos el contenido anterior
+            txt.config(state="normal")
+            txt.delete("1.0", "end")
+
+            nombre = var_e.get()
+            eq_obj = None
+            for eq in torneo_actual.equipos:
+                if eq.pais == nombre:
+                    eq_obj = eq
+
+            if eq_obj:
+                txt.insert("end", "HISTORIAL: " + eq_obj.pais.upper() +
+                            "  (" + eq_obj.abreviatura + ")\n")
+                txt.insert("end", "=" * 55 + "\n\n")
+
+                hay_partidos = False
+                for p in torneo_actual.partidos:
+                    if (p.identificador1 == eq_obj.identificador or
+                            p.identificador2 == eq_obj.identificador):
+                        if p.terminado:
+                            hay_partidos = True
+                            marcador = str(p.goles1) + " - " + str(p.goles2)
+                            txt.insert("end",
+                                        "Fecha: " + p.fecha +
+                                        "  |  " + p.identificador1 +
+                                        "  " + marcador + "  " +
+                                        p.identificador2 +
+                                        "  |  " + p.lugar + "\n")
+
+                if not hay_partidos:
+                    txt.insert("end", "Sin partidos jugados registrados.\n")
+
+                txt.insert("end", "\n" + "=" * 55 + "\n")
+                txt.insert("end", "ESTADO DE AVANCE: " + eq_obj.avance + "\n")
+
+            # Deshabilitamos para que no se pueda editar
+            txt.config(state="disabled")
+
+        tk.Button(f_ctrl, text="Ver Historial",
+                  bg="#0f3460", fg="white",
+                  command=ver_historial).pack(side="left", padx=8)
+        ver_historial()   # cargamos el primer equipo por defecto
+
+    # INFORME 4: proximo partido de un equipo desde una fecha
+    def mostrar_informe4(self):
+        self.limpiar_zona()
+
+        tk.Label(self.f_zona,
+                 text="INFORME 4 – PROXIMO PARTIDO DE UN EQUIPO",
+                 bg="#1a1a2e", fg="#f5a623",
+                 font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
+
+        lista_paises = []
+        for eq in torneo_actual.equipos:
+            lista_paises.append(eq.pais)
+
+        if len(lista_paises) == 0:
+            tk.Label(self.f_zona,
+                     text="No hay equipos registrados.",
+                     fg="red", bg="#1a1a2e").pack()
+            return
+
+        f_ctrl = tk.Frame(self.f_zona, bg="#1a1a2e")
+        f_ctrl.pack(anchor="w", pady=5)
+
+        tk.Label(f_ctrl, text="Equipo:", bg="#1a1a2e", fg="white").grid(row=0, column=0, padx=5)
+        var_e = tk.StringVar(f_ctrl)
+        var_e.set(lista_paises[0])
+        tk.OptionMenu(f_ctrl, var_e, *lista_paises).grid(row=0, column=1, padx=5)
+
+        tk.Label(f_ctrl, text="Desde fecha (AAAA-MM-DD):", bg="#1a1a2e", fg="white").grid(row=0, column=2, padx=5)
+        ent_fecha = tk.Entry(f_ctrl, width=14)
+        ent_fecha.insert(0, "2026-06-11")   # fecha de inicio del mundial como default
+        ent_fecha.grid(row=0, column=3, padx=5)
+
+        # Label grande para mostrar el resultado
+        lbl_res = tk.Label(self.f_zona,
+                            text="",
+                            bg="#16213e", fg="white",
+                            font=("Arial", 11),
+                            relief="solid", bd=1,
+                            padx=20, pady=20,
+                            justify="left")
+        lbl_res.pack(fill="x", pady=20, padx=10)
+
+        def buscar_proximo():
+            nombre  = var_e.get()
+            fecha_b = ent_fecha.get().strip()
+
+            # Buscamos el objeto equipo por pais
+            eq_obj = None
+            for eq in torneo_actual.equipos:
+                if eq.pais == nombre:
+                    eq_obj = eq
+
+            if not eq_obj:
+                return
+
+            # Buscamos el partido mas cercano a la fecha ingresada que no este terminado
+            proximo = None
+            for p in torneo_actual.partidos:
+                es_del_equipo = (p.identificador1 == eq_obj.identificador or
+                                  p.identificador2 == eq_obj.identificador)
+                es_futuro     = (not p.terminado and p.fecha >= fecha_b)
+
+                if es_del_equipo and es_futuro:
+                    if proximo is None or p.fecha < proximo.fecha:
+                        proximo = p
+
+            if proximo:
+                texto = ("PROXIMO PARTIDO ENCONTRADO\n\n" +
+                          "Fecha:  " + proximo.fecha + "     Hora: " + proximo.hora + "\n" +
+                          "Lugar:  " + proximo.lugar + "\n" +
+                          "Partido: " + proximo.identificador1 + "  vs  " + proximo.identificador2 + "\n" +
+                          "Estado: " + proximo.estado.upper())
+                lbl_res.config(text=texto, fg="#f5a623")
+            else:
+                lbl_res.config(text="Sin partidos programados desde la fecha indicada.", fg="red")
+
+        tk.Button(f_ctrl, text="Buscar Proximo",
+                  bg="#0f3460", fg="white",
+                  command=buscar_proximo).grid(row=0, column=4, padx=12)
+        buscar_proximo()   # cargamos el resultado por defecto
+
+    # INFORME 5: clasificacion general de todos los grupos
+    def mostrar_informe5(self):
+        self.limpiar_zona()
+
+        tk.Label(self.f_zona,
+                 text="INFORME 5 – CLASIFICACION GENERAL (todos los grupos)",
+                 bg="#1a1a2e", fg="#f5a623",
+                 font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
+
+        # Canvas con scrollbar para poder desplazarse entre los 12 grupos
+        f_scroll = tk.Frame(self.f_zona, bg="#1a1a2e")
+        f_scroll.pack(fill="both", expand=True)
+
+        canvas = tk.Canvas(f_scroll, bg="#1a1a2e", highlightthickness=0)
+        scrollbar = tk.Scrollbar(f_scroll, orient="vertical", command=canvas.yview)
+
+        # Frame interno donde se colocan las tablas de cada grupo
+        f_interno = tk.Frame(canvas, bg="#1a1a2e")
+
+        # Cada vez que el frame interno cambie de tamanio, actualizamos el scroll
+        f_interno.bind("<Configure>",
+                        lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+        canvas.create_window((0, 0), window=f_interno, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # Recorremos los 12 grupos de la A a la L
+        grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+
+        for g in grupos:
+            lista_grupo = torneo_actual.tabla_posiciones(g)
+
+            # Solo mostramos los grupos que tienen equipos registrados
+            if len(lista_grupo) > 0:
+                # Caja con el titulo del grupo
+                f_caja = tk.LabelFrame(f_interno,
+                                        text="  GRUPO " + g + "  ",
+                                        bg="#16213e", fg="#f5a623",
+                                        font=("Arial", 11, "bold"),
+                                        padx=10, pady=5)
+                f_caja.pack(fill="x", pady=8, padx=5)
+
+                # Encabezado de columnas
+                columnas = [("Pos", 5), ("Pais", 22), ("PJ", 5), ("G", 5),
+                             ("E", 5), ("P", 5), ("GF", 5), ("GC", 5), ("DG", 6), ("Pts", 6)]
+                for col_i, (texto, ancho) in enumerate(columnas):
+                    tk.Label(f_caja,
+                              text=texto,
+                              bg="#16213e", fg="#f5a623",
+                              font=("Arial", 9, "bold"),
+                              width=ancho).grid(row=0, column=col_i)
+
+                # Fila de cada equipo
+                pos = 1
+                for eq in lista_grupo:
+                    dg = eq.goles_a - eq.goles_c
+                    datos_fila = [str(pos), eq.pais, str(eq.total_p), str(eq.ganados),
+                                   str(eq.empate), str(eq.perdidos),
+                                   str(eq.goles_a), str(eq.goles_c), str(dg), str(eq.puntos)]
+                    anchos_fila = [5, 22, 5, 5, 5, 5, 5, 5, 6, 6]
+
+                    for col_i, (dato, ancho) in enumerate(zip(datos_fila, anchos_fila)):
+                        # Los puntos van en dorado para destacarlos
+                        color = "#f5a623" if col_i == 9 else "white"
+                        negrita = "bold" if col_i == 9 else "normal"
+                        tk.Label(f_caja,
+                                  text=dato,
+                                  bg="#16213e", fg=color,
+                                  font=("Arial", 9, negrita),
+                                  width=ancho).grid(row=pos, column=col_i)
+                    pos += 1
+
+# ARRANQUE DE LA APLICACION
+if __name__ == "__main__":
+    cargar_datos() # Cargamos los datos guardados ANTES de construir la interfaz
+
+    raiz_tk = tk.Tk() # Se crea la ventana raiz de Tkinter
+    app_sistema = Aplicacion(raiz_tk) # Creamos la aplicacion pasandole la ventana raiz
+
+    raiz_tk.mainloop() # Iniciamos el bucle principal que mantiene la ventana abierta
