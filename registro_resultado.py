@@ -1,4 +1,4 @@
-from clases import torneo_actual
+from clases import torneo
 
 #funcion para ingresar resultados de partidos
 def registrar_resultado():
@@ -15,12 +15,12 @@ def registrar_resultado():
     penales2 = int(input("Penales equipo visitante (si aplica, sino 0): "))
 
     #Guardamos el resultado en el torneo
-    mensaje = torneo_actual.resultado(id_local, id_visitante, fecha, gl, gv, penales1, penales2)
+    mensaje = torneo.resultado(id_local, id_visitante, fecha, gl, gv, penales1, penales2)
     print(mensaje)
 
     #Buscamos los equipos para actualizar sus estadisticas
-    equipo_local = torneo_actual.busqueda(id_local)
-    equipo_visitante = torneo_actual.busqueda(id_visitante)
+    equipo_local = torneo.busqueda(id_local)
+    equipo_visitante = torneo.busqueda(id_visitante)
 
     if mensaje == "Datos guardados con exito":
         #Sumamos un partido jugado a cada equipo
@@ -52,7 +52,7 @@ def registrar_resultado():
 def mostrar_tabla(grupo):
     print("\n TABLA DE POSICIONES - GRUPO", grupo)
     #Obtenemos la tabla ordenada del grupo
-    tabla= torneo_actual.tabla_posiciones(grupo)
+    tabla= torneo.tabla_posiciones(grupo)
     if not tabla:
         print("No hay equipos en este grupo.")
         return 
@@ -69,7 +69,7 @@ def mostrar_tabla(grupo):
 def mostrar_mejores_terceros():
     print("\n MEJORES TERCEROS CLASIFICADOS ")
     #Obtenemos la lista de mejores terceros
-    terceros = torneo_actual.clasificar_mejores_terceros()
+    terceros = torneo.clasificar_mejores_terceros()
     pos = 1
     for e in terceros:
         dif = e.goles_a - e.goles_c
@@ -85,18 +85,18 @@ def avanzar_eliminacion_directa():
     grupos = []
 
     #Armamos lista de grupos sin repetir
-    for e in torneo_actual.equipos:
+    for e in torneo.equipos:
         if e.grupo not in grupos:
             grupos.append(e.grupo)
 
     #Tomamos los dos primeros de cada grupo y los agregamos a clasificados
     for g in grupos:
-        tabla = torneo_actual.tabla_posiciones(g)
+        tabla = torneo.tabla_posiciones(g)
         if len(tabla) >= 2:
             clasificados.extend(tabla[:2]) #usamos extend para agregar varios equipos
 
     #Agregamos tambien los mejores terceros
-    clasificados.extend(torneo_actual.clasificar_mejores_terceros())
+    clasificados.extend(torneo.clasificar_mejores_terceros())
 
     #Mostramos todos los equipos que pasan a octavos
     print("Equipos clasificados a octavos de final:")
