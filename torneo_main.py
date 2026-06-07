@@ -8,12 +8,7 @@ from conf_torneo import torneo_actual
 from clases import equipo, partido
 
 
-<<<<<<< HEAD:main.py
-# PERSISTENCIA: GUARDAR Y CARGAR DATOS EN ARCHIVO DE TEXTO 
-
-=======
 # PERSISTENCIA: GUARDAR Y CARGAR DATOS EN ARCHIVO DE TEXTO
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
 def guardar_datos():
     # Abrimos el archivo en modo escritura. Si no existe, lo crea automaticamente
     archivo = open("datos_torneo.txt", "w", encoding="utf-8")
@@ -64,7 +59,7 @@ def guardar_datos():
 
 
 def cargar_datos():
-    # Verificamos si el archivo existe antes de intentar abrirlo 
+    # Verificamos si el archivo existe antes de intentar abrirlo (sin try/except)
     if not os.path.exists("datos_torneo.txt"):
         return   # si no existe, salimos sin hacer nada (primera vez que se ejecuta)
 
@@ -129,11 +124,7 @@ def cargar_datos():
             torneo_actual.partidos.append(p)
 
 
-<<<<<<< HEAD:main.py
-# ESTRUCTURAS DE DATOS: PILA Y COLA 
-=======
 # ESTRUCTURAS DE DATOS: PILA Y COLA
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
 
 historial_pantallas = []
 
@@ -149,13 +140,7 @@ def inicializar_cola_partidos():
             cola_partidos.append(p)   # enqueue: agregamos al final de la cola
 
 
-<<<<<<< HEAD:main.py
-
 # CLASE PRINCIPAL: APLICACION (ventana principal y navegacion)
-
-=======
-# CLASE PRINCIPAL: APLICACION (ventana principal y navegacion)
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
 
 class Aplicacion:
     def __init__(self, raiz):
@@ -195,7 +180,7 @@ class Aplicacion:
         self.mostrar_menu_principal()
 
     def crear_encabezado(self, frame_destino):
-        # Este encabezado aparece en TODAS las pantallas 
+        # Este encabezado aparece en TODAS las pantallas (obligatorio segun el TP)
         f_header = tk.Frame(frame_destino, bg="#16213e", pady=8)
         f_header.pack(fill="x", side="top")
 
@@ -327,11 +312,6 @@ class Aplicacion:
 
 
 # PANTALLA 1: CONFIGURACION DEL TORNEO
-<<<<<<< HEAD:main.py
-
-
-=======
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
 class PantallaConfiguracion:
     def __init__(self, contenedor, app):
         self.contenedor = contenedor
@@ -389,13 +369,7 @@ class PantallaConfiguracion:
                   bg="#0f3460", fg="white", font=("Arial", 10, "bold"),
                   command=self.guardar_equipo).grid(row=3, column=0, columnspan=4, pady=12)
 
-<<<<<<< HEAD:main.py
-
         # FORMULARIO DE PARTIDOS (lado derecho)
-
-=======
-        # FORMULARIO DE PARTIDOS (lado derecho)
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
         f_partido = tk.LabelFrame(f_cuerpo,
                                    text="  Registrar Partido  ",
                                    bg="#16213e", fg="#f5a623",
@@ -432,13 +406,7 @@ class PantallaConfiguracion:
                   bg="#0f3460", fg="white", font=("Arial", 10, "bold"),
                   command=self.guardar_partido).grid(row=3, column=0, columnspan=4, pady=12)
 
-<<<<<<< HEAD:main.py
-
         # TABLAS DE LISTADO (Treeview)
-
-=======
-        # TABLAS DE LISTADO (Treeview)
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
         tk.Label(f_cuerpo, text="Equipos Registrados",
                  bg="#1a1a2e", fg="white",
                  font=("Arial", 10, "bold")).place(x=5, y=255)
@@ -465,13 +433,7 @@ class PantallaConfiguracion:
             self.tabla_p.column(col, width=ancho, anchor="center")
         self.tabla_p.place(x=475, y=278, width=455, height=145)
 
-<<<<<<< HEAD:main.py
-
         # BOTONES INFERIORES
-
-=======
-        # BOTONES INFERIORES
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
         self.btn_cerrar = tk.Button(f_cuerpo,
                                      text="🔒  Cerrar Configuracion del Torneo",
                                      bg="#e94560", fg="white",
@@ -639,11 +601,6 @@ class PantallaConfiguracion:
 
 
 # PANTALLA 2: REGISTRO DE RESULTADOS
-<<<<<<< HEAD:main.py
-
-
-=======
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
 class PantallaResultados:
     def __init__(self, contenedor, app):
         self.contenedor = contenedor
@@ -823,7 +780,7 @@ class PantallaResultados:
         pl = int(pl_str)
         pv = int(pv_str)
 
-        # Llamamos al metodo resultado() de la clase torneo 
+        # Llamamos al metodo resultado() de la clase torneo (compañero 1)
         mensaje = torneo_actual.resultado(
             self.partido_seleccionado.identificador1,
             self.partido_seleccionado.identificador2,
@@ -898,12 +855,7 @@ class PantallaResultados:
             messagebox.showinfo("Estado", "Partido marcado como REPROGRAMADO.")
 
 
-<<<<<<< HEAD:main.py
-# PANTALLA 3: EMISION DE INFORMES 
-
-=======
 # PANTALLA 3: EMISION DE INFORMES (5 informes)
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
 
 class PantallaInformes:
     def __init__(self, contenedor, app):
@@ -957,13 +909,7 @@ class PantallaInformes:
         for widget in self.f_zona.winfo_children():
             widget.destroy()
 
-<<<<<<< HEAD:main.py
-
     # INFORME 1: partidos de una fecha especifica
-
-=======
-    # INFORME 1: partidos de una fecha especifica
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
     def mostrar_informe1(self):
         self.limpiar_zona()
 
@@ -1016,13 +962,7 @@ class PantallaInformes:
                   bg="#0f3460", fg="white",
                   command=buscar).pack(side="left", padx=8)
 
-<<<<<<< HEAD:main.py
-
     # INFORME 2: tabla de posiciones de un grupo
-
-=======
-    # INFORME 2: tabla de posiciones de un grupo
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
     def mostrar_informe2(self):
         self.limpiar_zona()
 
@@ -1070,13 +1010,7 @@ class PantallaInformes:
                   command=consultar).pack(side="left", padx=8)
         consultar()   # cargamos el grupo A por defecto al abrir
 
-<<<<<<< HEAD:main.py
-
     # INFORME 3: historial de partidos de un equipo
-
-=======
-    # INFORME 3: historial de partidos de un equipo
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
     def mostrar_informe3(self):
         self.limpiar_zona()
 
@@ -1156,13 +1090,7 @@ class PantallaInformes:
                   command=ver_historial).pack(side="left", padx=8)
         ver_historial()   # cargamos el primer equipo por defecto
 
-<<<<<<< HEAD:main.py
-
     # INFORME 4: proximo partido de un equipo desde una fecha
-
-=======
-    # INFORME 4: proximo partido de un equipo desde una fecha
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
     def mostrar_informe4(self):
         self.limpiar_zona()
 
@@ -1243,13 +1171,7 @@ class PantallaInformes:
                   command=buscar_proximo).grid(row=0, column=4, padx=12)
         buscar_proximo()   # cargamos el resultado por defecto
 
-<<<<<<< HEAD:main.py
-
     # INFORME 5: clasificacion general de todos los grupos
-
-=======
-    # INFORME 5: clasificacion general de todos los grupos
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
     def mostrar_informe5(self):
         self.limpiar_zona()
 
@@ -1324,30 +1246,11 @@ class PantallaInformes:
                                   width=ancho).grid(row=pos, column=col_i)
                     pos += 1
 
-<<<<<<< HEAD:main.py
-
-
-# ARRANQUE DE LA APLICACION
-
-
-if __name__ == "__main__":
-    # Cargamos los datos guardados antes de construir la interfaz
-    cargar_datos()
-=======
 # ARRANQUE DE LA APLICACION
 if __name__ == "__main__":
     cargar_datos() # Cargamos los datos guardados ANTES de construir la interfaz
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
 
     raiz_tk = tk.Tk() # Se crea la ventana raiz de Tkinter
     app_sistema = Aplicacion(raiz_tk) # Creamos la aplicacion pasandole la ventana raiz
 
-<<<<<<< HEAD:main.py
-    # Creamos la aplicacion pasandole la ventana raiz
-    app_sistema = Aplicacion(raiz_tk)
-
-    # Iniciamos el bucle principal que mantiene la ventana abierta
-    raiz_tk.mainloop()
-=======
     raiz_tk.mainloop() # Iniciamos el bucle principal que mantiene la ventana abierta
->>>>>>> 25aeac925b50599557cd7ee57540511399a09d4f:torneo_main.py
