@@ -418,7 +418,7 @@ class PantallaConfiguracion:
         menu_g.grid(row=2, column=3, padx=8, pady=8, sticky="w")
 
         tk.Button(f_equipo, text="Guardar Equipo",
-                  bg="#e94560", fg="white", font=("Arial", 10, "bold"), activebackground="#ff5c7c",
+                  bg="#e18ddd", fg="white", font=("Arial", 10, "bold"), activebackground="#e18ddd",
                   command=self.guardar_equipo).grid(row=3, column=0, columnspan=4, pady=10)
 
         f_partido = tk.LabelFrame(self.f_componentes,
@@ -454,7 +454,7 @@ class PantallaConfiguracion:
         self.menu_e2.grid(row=2, column=3, padx=5, pady=8, sticky="w")
 
         tk.Button(f_partido, text="Guardar Partido",
-                  bg="#e94560", fg="white", font=("Arial", 10, "bold"), activebackground="#ff5c7c",
+                  bg="#e18ddd", fg="white", font=("Arial", 10, "bold"), activebackground="#e18ddd",
                   command=self.guardar_partido).grid(row=3, column=0, columnspan=4, pady=10)
 
         tk.Label(self.f_componentes, text=" Equipos Registrados ", bg=COLOR_CAJA, fg=COLOR_TEXTO_TITULO, font=("Arial", 10, "bold")).place(x=15, y=255)
@@ -1137,7 +1137,7 @@ class PantallaInformes:
                   command=ver_historial).pack(side="left", padx=8)
         ver_historial()   # cargamos el primer equipo por defecto
 
-    # INFORME 4: proximo partido de un equipo desde una fecha
+# INFORME 4: proximo partido de un equipo desde una fecha
     def mostrar_informe4(self):
         self.limpiar_zona()
 
@@ -1196,7 +1196,7 @@ class PantallaInformes:
             proximo = None
             for p in torneo_actual.partidos:
                 es_del_equipo = (p.identificador1 == eq_obj.identificador or
-                                  p.identificador2 == eq_obj.identificador)
+                                 p.identificador2 == eq_obj.identificador)
                 es_futuro     = (not p.terminado and p.fecha >= fecha_b)
 
                 if es_del_equipo and es_futuro:
@@ -1205,18 +1205,20 @@ class PantallaInformes:
 
             if proximo:
                 texto = ("PROXIMO PARTIDO ENCONTRADO\n\n" +
-                          "Fecha:  " + proximo.fecha + "     Hora: " + proximo.hora + "\n" +
-                          "Lugar:  " + proximo.lugar + "\n" +
-                          "Partido: " + proximo.identificador1 + "  vs  " + proximo.identificador2 + "\n" +
-                          "Estado: " + proximo.estado.upper())
+                         "Fecha:  " + proximo.fecha + "    Hora: " + proximo.hora + "\n" +
+                         "Lugar:  " + proximo.lugar + "\n" +
+                         "Partido: " + proximo.identificador1 + "  vs  " + proximo.identificador2 + "\n" +
+                         "Estado: " + proximo.estado.upper())
                 lbl_res.config(text=texto, fg="#ffffff")
             else:
-                lbl_res.config(text="Sin partidos programados desde la fecha indicada.", fg="red")
+
+                lbl_res.config(text="Sin partidos programados desde la fecha indicada.", fg="#ffffff")
 
         tk.Button(f_ctrl, text="Buscar Proximo",
                   bg="#b9369a", fg="white",
                   command=buscar_proximo).grid(row=0, column=4, padx=12)
-        buscar_proximo()   # cargamos el resultado por defecto
+        
+        buscar_proximo()   # Carga el resultado por defecto al iniciar la pantalla
 
     # INFORME 5: clasificacion general de todos los grupos
     def mostrar_informe5(self):
