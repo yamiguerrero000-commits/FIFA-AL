@@ -13,7 +13,7 @@ class equipo:
         self.goles_c=0 #goles en contra
         self.goles_a=0 #goles a favor
         self.puntos=0 #total de puntos
-        self.avance="Fase" #lugar del equipo
+        self.avance="Fase de Grupos" #lugar del equipo
 
         # Fabri modificacion, atributos disciplina
         self.tarjetas_amarillas = 0

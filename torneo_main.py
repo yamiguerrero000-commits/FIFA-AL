@@ -1181,6 +1181,12 @@ class PantallaInformes:
 
                 if not hay_partidos:
                     txt.insert("end", "Sin partidos jugados registrados.\n")
+                
+                txt.insert("end", "\n" + "-" * 55 + "\n")
+                txt.insert("end", f"Tarjetas Amarillas: {eq_obj.tarjetas_amarillas}\n")
+                txt.insert("end", f"Tarjetas Rojas: {eq_obj.tarjetas_rojas}\n")
+                estado = "Suspendido" if eq_obj.suspendido else "Activo"
+                txt.insert("end", f"Estado del Equipo: {estado}\n")
 
                 txt.insert("end", "\n" + "=" * 55 + "\n")
                 txt.insert("end", "ESTADO DE AVANCE: " + eq_obj.avance + "\n")

@@ -52,14 +52,15 @@ def registrar_resultado():
         rojas_local = int(input("Tarjetas rojas equipo local: "))
         amarillas_visitante = int(input("Tarjetas amarillas equipo visitante: "))
         rojas_visitante = int(input("Tarjetas rojas equipo visitante: "))
-        equipo_local.registrar_tarjeta+=amarillas_local
-        equipo_local.registrar_tarjeta+=rojas_local
-        equipo_visitante.registrar_tarjeta+=amarillas_visitante 
-        equipo_visitante.registrar_tarjeta+=rojas_visitante
-        if equipo_local.tarjetas_rojas>0 or equipo_local.tarjetas_amarillas%2==0:
-            equipo_local.suspendido=True
-        if equipo_visitante.tarjetas_rojas>0 or equipo_visitante.tarjetas_amarillas%2==0:
-            equipo_visitante.suspendido=True
+        for _ in range(amarillas_local):
+            equipo_local.registrar_tarjeta("amarilla")
+        for _ in range(rojas_local):
+            equipo_local.registrar_tarjeta("roja")
+
+        for _ in range(amarillas_visitante):
+            equipo_visitante.registrar_tarjeta("amarilla")
+        for _ in range(rojas_visitante):
+            equipo_visitante.registrar_tarjeta("roja")
 
 #Mostrar tabla de posiciones en fase de grupos 
 def mostrar_tabla(grupo):
@@ -115,4 +116,4 @@ def avanzar_eliminacion_directa():
     print("Equipos clasificados a octavos de final:")
     for e in clasificados:
         print("- " + e.pais + " (Grupo " + e.grupo + ", Pts:" + str(e.puntos) + ")")
-            
+        e.avance = "Octavos de Final" #actualizamos el avance del equipo
