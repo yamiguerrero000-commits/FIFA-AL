@@ -334,6 +334,7 @@ class Aplicacion:
 
 
 # PANTALLA 1: CONFIGURACION DEL TORNEO
+
 class PantallaConfiguracion:
     def __init__(self, contenedor, app):
         self.contenedor = contenedor
@@ -344,20 +345,36 @@ class PantallaConfiguracion:
 
         self.app.crear_encabezado(self.contenedor)
 
-        # Frame principal de esta pantalla
+        # Frame principal externo (Mantiene el fondo original rosa/fucsia de la app)
         f_cuerpo = tk.Frame(self.contenedor, bg="#1a1a2e")
         f_cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
 
-        # 🟢 CORRECCIÓN: Creamos un sub-contenedor con el ancho exacto del contenido
-        # Al usar expand=True en el pack, Tkinter lo centrará automáticamente en la pantalla
-        f_central = tk.Frame(f_cuerpo, bg="#1a1a2e", width=935, height=540)
-        f_central.pack(expand=True)
-        f_central.pack_propagate(False) # Evita que el frame se encoja
+        # Sub-contenedor central (El que antes era azul oscuro fijo)
+        self.f_central = tk.Frame(f_cuerpo, bg="#1a1a2e", width=935, height=540)
+        self.f_central.pack(expand=True)
+        self.f_central.pack_propagate(False) 
+        try:
+            # Pon el nombre exacto de tu archivo de imagen aquí (ej: "imagen.jpg")
+            self.imagen_original = Image.open("fondo2.jpg") 
+            self.foto_fondo = None  
+            
+            # Label del fondo acoplado únicamente al bloque central
+            self.lbl_fondo_azul = tk.Label(self.f_central)
+            self.lbl_fondo_azul.place(x=0, y=0, relwidth=1, relheight=1)
+            
+            # Evento para redimensionar la imagen si el bloque cambia de escala
+            self.f_central.bind("<Configure>", self.redimensionar_fondo_interno)
+        except Exception as e:
+            print(f"⚠️ Alerta: No se pudo cargar la imagen para el bloque central: {e}")
+            self.imagen_original = None
 
-        # FORMULARIO DE EQUIPOS (lado izquierdo) - Ahora dentro de f_central
-        f_equipo = tk.LabelFrame(f_central,
+        # -------------------------------------------------------------------------
+        # FORMULARIOS INTERNOS (Colocados encima de la nueva imagen)
+        # -------------------------------------------------------------------------
+        # Para que no tapen la imagen con un color sólido plano, usamos bg="" o fondos sutiles
+        f_equipo = tk.LabelFrame(self.f_central,
                                   text="   Registrar Equipo   ",
-                                  bg="#16213e", fg="#f5a623",
+                                  bg="#16213e", fg="#f5a623",  # Puedes cambiar #16213e si quieres que el bloque sea más translúcido
                                   font=("Arial", 11, "bold"))
         f_equipo.place(x=5, y=5, width=455, height=240)
 
@@ -397,8 +414,8 @@ class PantallaConfiguracion:
                   bg="#0f3460", fg="white", font=("Arial", 10, "bold"),
                   command=self.guardar_equipo).grid(row=3, column=0, columnspan=4, pady=12)
 
-        # FORMULARIO DE PARTIDOS (lado derecho) - Ahora dentro de f_central
-        f_partido = tk.LabelFrame(f_central,
+        # FORMULARIO DE PARTIDOS (lado derecho)
+        f_partido = tk.LabelFrame(self.f_central,
                                    text="   Registrar Partido   ",
                                    bg="#16213e", fg="#f5a623",
                                    font=("Arial", 11, "bold"))
@@ -434,13 +451,12 @@ class PantallaConfiguracion:
                   bg="#0f3460", fg="white", font=("Arial", 10, "bold"),
                   command=self.guardar_partido).grid(row=3, column=0, columnspan=4, pady=12)
 
-        # TABLAS DE LISTADO (Treeview) - Ahora dentro de f_central
-        tk.Label(f_central, text="Equipos Registrados",
+        # TABLAS DE LISTADO (Treeview)
+        tk.Label(self.f_central, text="Equipos Registrados",
                  bg="#1a1a2e", fg="white",
                  font=("Arial", 10, "bold")).place(x=5, y=255)
 
-        # Tabla de equipos
-        self.tabla_e = ttk.Treeview(f_central,
+        self.tabla_e = ttk.Treeview(self.f_central,
                                      columns=("ID", "Pais", "Abrev", "Grupo", "Conf"),
                                      show="headings", height=6)
         for col, ancho in [("ID", 60), ("Pais", 160), ("Abrev", 70), ("Grupo", 60), ("Conf", 100)]:
@@ -448,12 +464,11 @@ class PantallaConfiguracion:
             self.tabla_e.column(col, width=ancho, anchor="center")
         self.tabla_e.place(x=5, y=278, width=455, height=145)
 
-        tk.Label(f_central, text="Partidos Programados",
+        tk.Label(self.f_central, text="Partidos Programados",
                  bg="#1a1a2e", fg="white",
                  font=("Arial", 10, "bold")).place(x=475, y=255)
 
-        # Tabla de partidos
-        self.tabla_p = ttk.Treeview(f_central,
+        self.tabla_p = ttk.Treeview(self.f_central,
                                      columns=("Fecha", "Hora", "Lugar", "Eq1", "Eq2"),
                                      show="headings", height=6)
         for col, ancho in [("Fecha", 90), ("Hora", 55), ("Lugar", 130), ("Eq1", 80), ("Eq2", 80)]:
@@ -461,27 +476,44 @@ class PantallaConfiguracion:
             self.tabla_p.column(col, width=ancho, anchor="center")
         self.tabla_p.place(x=475, y=278, width=455, height=145)
 
-        # BOTONES INFERIORES - Ahora dentro de f_central
-        self.btn_cerrar = tk.Button(f_central,
+        # BOTONES INFERIORES
+        self.btn_cerrar = tk.Button(self.f_central,
                                      text="🔒   Cerrar Configuracion del Torneo",
                                      bg="#e94560", fg="white",
                                      font=("Arial", 11, "bold"),
                                      command=self.cerrar_configuracion)
-        self.btn_cerrar.place(x=292, y=440, width=350, height=38) # Ajustado x para centrar el botón de 350px
+        self.btn_cerrar.place(x=292, y=440, width=350, height=38)
 
-        tk.Button(f_central,
+        tk.Button(self.f_central,
                   text="⬅   Volver al Menu",
                   bg="#0f3460", fg="white",
                   font=("Arial", 10),
-                  command=self.app.volver_atras).place(x=387, y=492, width=160, height=30) # Ajustado x para centrar el botón de 160px
+                  command=self.app.volver_atras).place(x=387, y=492, width=160, height=30)
 
-        # Cargamos los datos iniciales en tablas y desplegables
         self.actualizar_tablas()
         self.actualizar_desplegables()
 
-        # Si la config ya estaba cerrada, bloqueamos los formularios
         if torneo_actual.datos:
             self.bloquear_formularios()
+
+        # Render inicial forzado de la imagen de fondo interno
+        self.f_central.update_idletasks()
+        self.redimensionar_fondo_interno()
+
+    # Redimensiona la imagen de fondo ocupando exactamente las dimensiones del recuadro interno
+    def redimensionar_fondo_interno(self, evento=None):
+        if not self.imagen_original or not self.f_central.winfo_exists():
+            return
+
+        ancho = self.f_central.winfo_width()
+        alto = self.f_central.winfo_height()
+
+        if ancho <= 1 or alto <= 1:
+            return
+
+        imagen_rediseñada = self.imagen_original.resize((ancho, alto), Image.Resampling.LANCZOS)
+        self.foto_fondo = ImageTk.PhotoImage(imagen_rediseñada)
+        self.lbl_fondo_azul.config(image=self.foto_fondo)
 
     def bloquear_formularios(self):
         self.btn_cerrar.config(state="disabled",
