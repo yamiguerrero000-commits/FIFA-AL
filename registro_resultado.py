@@ -1,4 +1,5 @@
 from clases import torneo
+from conf_torneo import torneo_actual 
 
 #funcion para ingresar resultados de partidos
 def registrar_resultado():
@@ -99,7 +100,7 @@ def avanzar_eliminacion_directa():
     grupos = []
 
     #Armamos lista de grupos sin repetir
-    for e in torneo.equipos:
+    for e in torneo_actual.equipos:
         if e.grupo not in grupos:
             grupos.append(e.grupo)
 
