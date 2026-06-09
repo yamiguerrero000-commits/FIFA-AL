@@ -202,20 +202,20 @@ class Aplicacion:
                 break
 
     def crear_encabezado(self, frame_destino):
-        f_header = tk.Frame(frame_destino, bg="#d80988", pady=8)
+        f_header = tk.Frame(frame_destino, bg="#de8ebf", pady=8)
         f_header.pack(fill="x", side="top")
 
         tk.Label(f_header,
                  text="Algoritmos y Estructuras de Datos II  –  Facultad Politecnica  –  UNA",
-                 bg="#d80988", fg="#16213e",
+                 bg="#de8ebf", fg="#16213e",
                  font=("Arial", 10, "bold")).pack()
 
         tk.Label(f_header,
                  text="⚽  Sistema de Gestion  –  Copa Mundial FIFA 2026",
-                 bg="#d80988", fg="white",
+                 bg="#de8ebf", fg="white",
                  font=("Arial", 14, "bold")).pack(pady=2)
 
-        lbl_reloj = tk.Label(f_header, text="", bg="#d80988", fg="#222222",
+        lbl_reloj = tk.Label(f_header, text="", bg="#de8ebf", fg="#222222",
                              font=("Arial", 10))
         lbl_reloj.pack()
 
@@ -238,17 +238,17 @@ class Aplicacion:
         self.limpiar_contenedor()
         historial_pantallas.append("MENU")
         self.crear_encabezado(self.contenedor)
-        panel = tk.Frame(self.contenedor, bg="#d80988", padx=60, pady=30)
+        panel = tk.Frame(self.contenedor, bg="#ec7bc0", padx=60, pady=30)
         panel.pack(pady=50)
         tk.Label(panel, text="MENU PRINCIPAL",
-                 bg="#d80988", fg="white",
+                 bg="#ec7bc0", fg="white",
                  font=("Arial", 18, "bold")).pack(pady=20)
 
         # Boton 1
         btn1 = tk.Button(panel,
                          text="1.  Configuracion del Torneo",
                          width=38, height=2,
-                         bg="#600f45", fg="white",
+                         bg="#b3428d", fg="white",
                          font=("Arial", 11, "bold"),
                          activebackground="#e94560",
                          command=self.abrir_configuracion)
@@ -258,7 +258,7 @@ class Aplicacion:
         btn2 = tk.Button(panel,
                          text="2.  Registro de Resultados",
                          width=38, height=2,
-                         bg="#600f45", fg="white",
+                         bg="#b3428d", fg="white",
                          font=("Arial", 11, "bold"),
                          activebackground="#e94560",
                          command=self.abrir_resultados)
@@ -268,7 +268,7 @@ class Aplicacion:
         btn3 = tk.Button(panel,
                          text="3.  Emision de Informes",
                          width=38, height=2,
-                         bg="#600f45", fg="white",
+                         bg="#b3428d", fg="white",
                          font=("Arial", 11, "bold"),
                          activebackground="#e94560",
                          command=self.abrir_informes)
@@ -282,7 +282,7 @@ class Aplicacion:
         btn4 = tk.Button(panel,
                          text="4.  Salir",
                          width=38, height=2,
-                         bg="#600f45", fg="white",
+                         bg="#b3428d", fg="white",
                          font=("Arial", 11, "bold"),
                          activebackground="#e94560",
                          command=self.salir_aplicacion)
@@ -1136,7 +1136,7 @@ class PantallaInformes:
         f_ctrl = tk.Frame(self.f_zona, bg="#681345")
         f_ctrl.pack(anchor="w", pady=5)
 
-        tk.Label(f_ctrl, text="Equipo:", bg="#681345", fg="white").pack(side="left", padx=5)
+        tk.Label(f_ctrl, text="Equipo:", bg="#681345", fg="black").pack(side="left", padx=5)
         var_e = tk.StringVar(f_ctrl)
         var_e.set(lista_paises[0])
         tk.OptionMenu(f_ctrl, var_e, *lista_paises).pack(side="left", padx=5)
