@@ -7,7 +7,6 @@ from PIL import Image, ImageTk       # para manejar imagenes y usarlas como fond
 from conf_torneo import torneo_actual
 from clases import equipo, partido
 
-
 # PERSISTENCIA: GUARDAR Y CARGAR DATOS EN ARCHIVO DE TEXTO
 def guardar_datos():
     # Abrimos el archivo en modo escritura. Si no existe, lo crea automaticamente
@@ -17,7 +16,6 @@ def guardar_datos():
     archivo.write(str(torneo_actual.datos) + "\n")
 
     # Guardamos cada equipo en una linea con sus atributos separados por comas
-    # El prefijo EQUIPO nos ayuda a saber de que tipo es la linea al cargar
     for eq in torneo_actual.equipos:
         linea = ("EQUIPO," +
                  str(eq.identificador) + "," +
@@ -59,10 +57,9 @@ def guardar_datos():
 
 
 def cargar_datos():
-    # Verificamos si el archivo existe antes de intentar abrirlo (sin try/except)
+    # Verificamos si el archivo existe antes de intentar abrirlo 
     if not os.path.exists("datos_torneo.txt"):
-        return   # si no existe, salimos sin hacer nada (primera vez que se ejecuta)
-
+        return   # si no existe, salimos sin hacer nada 
     archivo = open("datos_torneo.txt", "r", encoding="utf-8")
     lineas = archivo.readlines()   # leemos todas las lineas de una vez en una lista
     archivo.close()
@@ -91,10 +88,10 @@ def cargar_datos():
 
         # Segun el prefijo, reconstruimos el objeto correspondiente
         if partes[0] == "EQUIPO":
-            # Creamos el equipo con los datos basicos (posiciones 1 al 6)
+            # Creamos el equipo con los datos basicos
             eq = equipo(partes[1], partes[2], partes[3],
                         int(partes[4]), partes[5], partes[6])
-            # Restauramos las estadisticas (posiciones 7 en adelante)
+            # Restauramos las estadisticas 
             eq.total_p            = int(partes[7])
             eq.ganados            = int(partes[8])
             eq.empate             = int(partes[9])    # empate, no empatados
@@ -111,7 +108,6 @@ def cargar_datos():
 
         elif partes[0] == "PARTIDO":
             # Creamos el partido con los datos basicos usando los parametros correctos
-            # __init__(self, fecha, hora, lugar, id1, id2)
             p = partido(partes[1], partes[2], partes[3], partes[4], partes[5])
             # Restauramos el resultado y estado
             p.goles1    = int(partes[6])
@@ -123,13 +119,9 @@ def cargar_datos():
             # Agregamos el partido reconstruido al torneo
             torneo_actual.partidos.append(p)
 
-
 # ESTRUCTURAS DE DATOS: PILA Y COLA
-
 historial_pantallas = []
-
 cola_partidos = []
-
 
 def inicializar_cola_partidos():
     # Vaciamos la cola y la llenamos con los partidos que aun no tienen resultado
@@ -140,7 +132,7 @@ def inicializar_cola_partidos():
             cola_partidos.append(p)   # enqueue: agregamos al final de la cola
 
 
-# CLASE PRINCIPAL: APLICACION (ventana principal y navegacion)
+# CLASE PRINCIPAL: APLICACION 
 
 class Aplicacion:
     def __init__(self, raiz):
@@ -246,12 +238,8 @@ class Aplicacion:
         self.limpiar_contenedor()
         historial_pantallas.append("MENU")
         self.crear_encabezado(self.contenedor)
-
-        # 🟢 CAMBIO: Se cambió el fondo del panel central (recuadro de los botones) a #d80988
         panel = tk.Frame(self.contenedor, bg="#d80988", padx=60, pady=30)
         panel.pack(pady=50)
-
-        # 🟢 CAMBIO: Se cambió el fondo a #d80988 y las letras a blanco (fg="white") para mejor lectura
         tk.Label(panel, text="MENU PRINCIPAL",
                  bg="#d80988", fg="white",
                  font=("Arial", 18, "bold")).pack(pady=20)
@@ -345,148 +333,162 @@ class PantallaConfiguracion:
 
         self.app.crear_encabezado(self.contenedor)
 
-        # Frame principal externo (Mantiene el fondo original rosa/fucsia de la app)
-        f_cuerpo = tk.Frame(self.contenedor, bg="#1a1a2e")
-        f_cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
+        # 1. El cuerpo principal ocupa todo el espacio disponible
+        f_cuerpo = tk.Frame(self.contenedor, bg="#ea008f")
+        f_cuerpo.pack(fill="both", expand=True)
 
-        # Sub-contenedor central (El que antes era azul oscuro fijo)
-        self.f_central = tk.Frame(f_cuerpo, bg="#1a1a2e", width=935, height=540)
-        self.f_central.pack(expand=True)
-        self.f_central.pack_propagate(False) 
+        # 2. El Canvas ahora se expande al 100% cubriendo todo el fondo
+        self.canvas = tk.Canvas(f_cuerpo, bg="#ea008f", highlightthickness=0)
+        self.canvas.pack(fill="both", expand=True)
+
         try:
-            # Pon el nombre exacto de tu archivo de imagen aquí (ej: "imagen.jpg")
-            self.imagen_original = Image.open("fondo2.jpg") 
-            self.foto_fondo = None  
-            
-            # Label del fondo acoplado únicamente al bloque central
-            self.lbl_fondo_azul = tk.Label(self.f_central)
-            self.lbl_fondo_azul.place(x=0, y=0, relwidth=1, relheight=1)
-            
-            # Evento para redimensionar la imagen si el bloque cambia de escala
-            self.f_central.bind("<Configure>", self.redimensionar_fondo_interno)
+            self.imagen_original = Image.open("fondo2.png")
+            self.foto_fondo = None
+            # Evento de redimensión asignado directamente al Canvas
+            self.canvas.bind("<Configure>", self.redimensionar_fondo_canvas)
         except Exception as e:
-            print(f"⚠️ Alerta: No se pudo cargar la imagen para el bloque central: {e}")
+            print(f"⚠️ Alerta: No se pudo cargar la imagen: {e}")
             self.imagen_original = None
+        COLOR_CAJA = "#edcbf6" 
+        COLOR_TEXTO_TITULO = "#66156c" 
+        COLOR_TEXTO_LABELS = "#000000" 
+        estilo = ttk.Style()
+        estilo.theme_use("clam") 
+        
+        estilo.configure("Treeview", 
+                         background="#ffffff", 
+                         fieldbackground="#ffffff", 
+                         foreground="black", 
+                         bordercolor=COLOR_CAJA, 
+                         borderwidth=1)
+        
+        estilo.configure("Treeview.Heading", 
+                         background=COLOR_CAJA, 
+                         foreground=COLOR_TEXTO_TITULO, 
+                         font=("Arial", 10, "bold"),
+                         relief="flat")
+        
+        estilo.map("Treeview.Heading", 
+                   background=[('active', COLOR_CAJA)], 
+                   foreground=[('active', COLOR_TEXTO_TITULO)])
 
-        # -------------------------------------------------------------------------
-        # FORMULARIOS INTERNOS (Colocados encima de la nueva imagen)
-        # -------------------------------------------------------------------------
-        # Para que no tapen la imagen con un color sólido plano, usamos bg="" o fondos sutiles
-        f_equipo = tk.LabelFrame(self.f_central,
+        self.f_componentes = tk.Frame(self.canvas, bg="#d3459c", width=935, height=540)
+        
+        # En lugar de usar place o pack, metemos el frame "DENTRO" del flujo del Canvas
+        self.canvas_window = self.canvas.create_window(0, 0, anchor="nw", window=self.f_componentes)
+
+        f_equipo = tk.LabelFrame(self.f_componentes,
                                   text="   Registrar Equipo   ",
-                                  bg="#16213e", fg="#f5a623",  # Puedes cambiar #16213e si quieres que el bloque sea más translúcido
-                                  font=("Arial", 11, "bold"))
-        f_equipo.place(x=5, y=5, width=455, height=240)
+                                  bg=COLOR_CAJA, fg=COLOR_TEXTO_TITULO,
+                                  font=("Arial", 11, "bold"), bd=1, relief="solid")
+        f_equipo.place(x=15, y=15, width=440, height=230)
 
-        # Fila 0: ID y Pais
-        tk.Label(f_equipo, text="ID:", bg="#16213e", fg="white").grid(row=0, column=0, padx=5, pady=6, sticky="w")
-        self.ent_id = tk.Entry(f_equipo, width=12)
-        self.ent_id.grid(row=0, column=1, padx=5, pady=6, sticky="w")
+        tk.Label(f_equipo, text="ID:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=0, column=0, padx=8, pady=8, sticky="w")
+        self.ent_id = tk.Entry(f_equipo, width=12, bg="white", fg="black", insertbackground="black", bd=1)
+        self.ent_id.grid(row=0, column=1, padx=8, pady=8, sticky="w")
 
-        tk.Label(f_equipo, text="Pais:", bg="#16213e", fg="white").grid(row=0, column=2, padx=5, pady=6, sticky="w")
-        self.ent_pais = tk.Entry(f_equipo, width=18)
-        self.ent_pais.grid(row=0, column=3, padx=5, pady=6, sticky="w")
+        tk.Label(f_equipo, text="Pais:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=0, column=2, padx=8, pady=8, sticky="w")
+        self.ent_pais = tk.Entry(f_equipo, width=18, bg="white", fg="black", insertbackground="black", bd=1)
+        self.ent_pais.grid(row=0, column=3, padx=8, pady=8, sticky="w")
 
-        # Fila 1: Abreviatura y Prefijo
-        tk.Label(f_equipo, text="Abreviatura:", bg="#16213e", fg="white").grid(row=1, column=0, padx=5, pady=6, sticky="w")
-        self.ent_abrev = tk.Entry(f_equipo, width=12)
-        self.ent_abrev.grid(row=1, column=1, padx=5, pady=6, sticky="w")
+        tk.Label(f_equipo, text="Abreviatura:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=1, column=0, padx=8, pady=8, sticky="w")
+        self.ent_abrev = tk.Entry(f_equipo, width=12, bg="white", fg="black", insertbackground="black", bd=1)
+        self.ent_abrev.grid(row=1, column=1, padx=8, pady=8, sticky="w")
 
-        tk.Label(f_equipo, text="Prefijo Tel:", bg="#16213e", fg="white").grid(row=1, column=2, padx=5, pady=6, sticky="w")
-        self.ent_pref = tk.Entry(f_equipo, width=18)
-        self.ent_pref.grid(row=1, column=3, padx=5, pady=6, sticky="w")
+        tk.Label(f_equipo, text="Prefijo Tel:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=1, column=2, padx=8, pady=8, sticky="w")
+        self.ent_pref = tk.Entry(f_equipo, width=18, bg="white", fg="black", insertbackground="black", bd=1)
+        self.ent_pref.grid(row=1, column=3, padx=8, pady=8, sticky="w")
 
-        # Fila 2: Confederacion y Grupo
-        tk.Label(f_equipo, text="Confederacion:", bg="#16213e", fg="white").grid(row=2, column=0, padx=5, pady=6, sticky="w")
+        tk.Label(f_equipo, text="Confederacion:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=2, column=0, padx=8, pady=8, sticky="w")
         self.var_conf = tk.StringVar(f_equipo)
         self.var_conf.set("UEFA")
         opciones_conf = ["UEFA", "CONMEBOL", "AFC", "CAF", "CONCACAF", "OFC"]
-        tk.OptionMenu(f_equipo, self.var_conf, *opciones_conf).grid(row=2, column=1, padx=5, pady=6, sticky="w")
+        menu_c = tk.OptionMenu(f_equipo, self.var_conf, *opciones_conf)
+        menu_c.config(bg="white", fg="black", activebackground="#f0f0f0", activeforeground="black", bd=1,
+                      highlightbackground=COLOR_CAJA, highlightthickness=0)
+        menu_c.grid(row=2, column=1, padx=8, pady=8, sticky="w")
 
-        tk.Label(f_equipo, text="Grupo:", bg="#16213e", fg="white").grid(row=2, column=2, padx=5, pady=6, sticky="w")
+        tk.Label(f_equipo, text="Grupo:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=2, column=2, padx=8, pady=8, sticky="w")
         self.var_grupo = tk.StringVar(f_equipo)
         self.var_grupo.set("A")
         opciones_grupo = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
-        tk.OptionMenu(f_equipo, self.var_grupo, *opciones_grupo).grid(row=2, column=3, padx=5, pady=6, sticky="w")
+        menu_g = tk.OptionMenu(f_equipo, self.var_grupo, *opciones_grupo)
+        menu_g.config(bg="white", fg="black", activebackground="#f0f0f0", activeforeground="black", bd=1,
+                      highlightbackground=COLOR_CAJA, highlightthickness=0)
+        menu_g.grid(row=2, column=3, padx=8, pady=8, sticky="w")
 
-        # Boton guardar equipo
         tk.Button(f_equipo, text="Guardar Equipo",
-                  bg="#0f3460", fg="white", font=("Arial", 10, "bold"),
-                  command=self.guardar_equipo).grid(row=3, column=0, columnspan=4, pady=12)
+                  bg="#e94560", fg="white", font=("Arial", 10, "bold"), activebackground="#ff5c7c",
+                  command=self.guardar_equipo).grid(row=3, column=0, columnspan=4, pady=10)
 
-        # FORMULARIO DE PARTIDOS (lado derecho)
-        f_partido = tk.LabelFrame(self.f_central,
+        f_partido = tk.LabelFrame(self.f_componentes,
                                    text="   Registrar Partido   ",
-                                   bg="#16213e", fg="#f5a623",
-                                   font=("Arial", 11, "bold"))
-        f_partido.place(x=475, y=5, width=455, height=240)
+                                   bg=COLOR_CAJA, fg=COLOR_TEXTO_TITULO,
+                                   font=("Arial", 11, "bold"), bd=1, relief="solid")
+        f_partido.place(x=480, y=15, width=440, height=230)
 
-        # Fila 0: Fecha y Hora
-        tk.Label(f_partido, text="Fecha (AAAA-MM-DD):", bg="#16213e", fg="white").grid(row=0, column=0, padx=5, pady=6, sticky="w")
-        self.ent_fec = tk.Entry(f_partido, width=13)
-        self.ent_fec.grid(row=0, column=1, padx=5, pady=6, sticky="w")
+        tk.Label(f_partido, text="Fecha (AAAA-MM-DD):", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=0, column=0, padx=5, pady=8, sticky="w")
+        self.ent_fec = tk.Entry(f_partido, width=13, bg="white", fg="black", insertbackground="black", bd=1)
+        self.ent_fec.grid(row=0, column=1, padx=5, pady=8, sticky="w")
 
-        tk.Label(f_partido, text="Hora (HH:MM):", bg="#16213e", fg="white").grid(row=0, column=2, padx=5, pady=6, sticky="w")
-        self.ent_hor = tk.Entry(f_partido, width=10)
-        self.ent_hor.grid(row=0, column=3, padx=5, pady=6, sticky="w")
+        tk.Label(f_partido, text="Hora (HH:MM):", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=0, column=2, padx=5, pady=8, sticky="w")
+        self.ent_hor = tk.Entry(f_partido, width=10, bg="white", fg="black", insertbackground="black", bd=1)
+        self.ent_hor.grid(row=0, column=3, padx=5, pady=8, sticky="w")
 
-        # Fila 1: Lugar
-        tk.Label(f_partido, text="Lugar:", bg="#16213e", fg="white").grid(row=1, column=0, padx=5, pady=6, sticky="w")
-        self.ent_lug = tk.Entry(f_partido, width=38)
-        self.ent_lug.grid(row=1, column=1, columnspan=3, padx=5, pady=6, sticky="w")
+        tk.Label(f_partido, text="Lugar:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=1, column=0, padx=5, pady=8, sticky="w")
+        self.ent_lug = tk.Entry(f_partido, width=38, bg="white", fg="black", insertbackground="black", bd=1)
+        self.ent_lug.grid(row=1, column=1, columnspan=3, padx=5, pady=8, sticky="w")
 
-        # Fila 2: Equipo 1 y Equipo 2
-        tk.Label(f_partido, text="Equipo 1:", bg="#16213e", fg="white").grid(row=2, column=0, padx=5, pady=6, sticky="w")
+        tk.Label(f_partido, text="Equipo 1:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=2, column=0, padx=5, pady=8, sticky="w")
         self.var_e1 = tk.StringVar(f_partido)
         self.menu_e1 = tk.OptionMenu(f_partido, self.var_e1, "")
-        self.menu_e1.grid(row=2, column=1, padx=5, pady=6, sticky="w")
+        self.menu_e1.config(bg="white", fg="black", activebackground="#f0f0f0", activeforeground="black", bd=1,
+                            highlightbackground=COLOR_CAJA, highlightthickness=0)
+        self.menu_e1.grid(row=2, column=1, padx=5, pady=8, sticky="w")
 
-        tk.Label(f_partido, text="Equipo 2:", bg="#16213e", fg="white").grid(row=2, column=2, padx=5, pady=6, sticky="w")
+        tk.Label(f_partido, text="Equipo 2:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=2, column=2, padx=5, pady=8, sticky="w")
         self.var_e2 = tk.StringVar(f_partido)
         self.menu_e2 = tk.OptionMenu(f_partido, self.var_e2, "")
-        self.menu_e2.grid(row=2, column=3, padx=5, pady=6, sticky="w")
+        self.menu_e2.config(bg="white", fg="black", activebackground="#f0f0f0", activeforeground="black", bd=1,
+                            highlightbackground=COLOR_CAJA, highlightthickness=0)
+        self.menu_e2.grid(row=2, column=3, padx=5, pady=8, sticky="w")
 
-        # Boton guardar partido
         tk.Button(f_partido, text="Guardar Partido",
-                  bg="#0f3460", fg="white", font=("Arial", 10, "bold"),
-                  command=self.guardar_partido).grid(row=3, column=0, columnspan=4, pady=12)
+                  bg="#e94560", fg="white", font=("Arial", 10, "bold"), activebackground="#ff5c7c",
+                  command=self.guardar_partido).grid(row=3, column=0, columnspan=4, pady=10)
 
-        # TABLAS DE LISTADO (Treeview)
-        tk.Label(self.f_central, text="Equipos Registrados",
-                 bg="#1a1a2e", fg="white",
-                 font=("Arial", 10, "bold")).place(x=5, y=255)
+        tk.Label(self.f_componentes, text=" Equipos Registrados ", bg=COLOR_CAJA, fg=COLOR_TEXTO_TITULO, font=("Arial", 10, "bold")).place(x=15, y=255)
 
-        self.tabla_e = ttk.Treeview(self.f_central,
+        self.tabla_e = ttk.Treeview(self.f_componentes,
                                      columns=("ID", "Pais", "Abrev", "Grupo", "Conf"),
-                                     show="headings", height=6)
-        for col, ancho in [("ID", 60), ("Pais", 160), ("Abrev", 70), ("Grupo", 60), ("Conf", 100)]:
+                                     show="headings", height=5)
+        for col, ancho in [("ID", 60), ("Pais", 150), ("Abrev", 70), ("Grupo", 60), ("Conf", 100)]:
             self.tabla_e.heading(col, text=col)
             self.tabla_e.column(col, width=ancho, anchor="center")
-        self.tabla_e.place(x=5, y=278, width=455, height=145)
+        self.tabla_e.place(x=15, y=280, width=440, height=140)
 
-        tk.Label(self.f_central, text="Partidos Programados",
-                 bg="#1a1a2e", fg="white",
-                 font=("Arial", 10, "bold")).place(x=475, y=255)
+        tk.Label(self.f_componentes, text=" Partidos Programados ", bg=COLOR_CAJA, fg=COLOR_TEXTO_TITULO, font=("Arial", 10, "bold")).place(x=480, y=255)
 
-        self.tabla_p = ttk.Treeview(self.f_central,
+        self.tabla_p = ttk.Treeview(self.f_componentes,
                                      columns=("Fecha", "Hora", "Lugar", "Eq1", "Eq2"),
-                                     show="headings", height=6)
-        for col, ancho in [("Fecha", 90), ("Hora", 55), ("Lugar", 130), ("Eq1", 80), ("Eq2", 80)]:
+                                     show="headings", height=5)
+        for col, ancho in [("Fecha", 90), ("Hora", 55), ("Lugar", 125), ("Eq1", 85), ("Eq2", 85)]:
             self.tabla_p.heading(col, text=col)
             self.tabla_p.column(col, width=ancho, anchor="center")
-        self.tabla_p.place(x=475, y=278, width=455, height=145)
+        self.tabla_p.place(x=480, y=280, width=440, height=140)
 
         # BOTONES INFERIORES
-        self.btn_cerrar = tk.Button(self.f_central,
+
+        self.btn_cerrar = tk.Button(self.f_componentes,
                                      text="🔒   Cerrar Configuracion del Torneo",
-                                     bg="#e94560", fg="white",
+                                     bg="#6c0e59", fg="white",
                                      font=("Arial", 11, "bold"),
                                      command=self.cerrar_configuracion)
         self.btn_cerrar.place(x=292, y=440, width=350, height=38)
 
-        tk.Button(self.f_central,
+        tk.Button(self.f_componentes,
                   text="⬅   Volver al Menu",
-                  bg="#0f3460", fg="white",
+                  bg="#5e1e47", fg="white", activebackground="#5e1e47",
                   font=("Arial", 10),
                   command=self.app.volver_atras).place(x=387, y=492, width=160, height=30)
 
@@ -496,29 +498,36 @@ class PantallaConfiguracion:
         if torneo_actual.datos:
             self.bloquear_formularios()
 
-        # Render inicial forzado de la imagen de fondo interno
-        self.f_central.update_idletasks()
-        self.redimensionar_fondo_interno()
+        self.canvas.update_idletasks()
+        self.redimensionar_fondo_canvas()
 
-    # Redimensiona la imagen de fondo ocupando exactamente las dimensiones del recuadro interno
-    def redimensionar_fondo_interno(self, evento=None):
-        if not self.imagen_original or not self.f_central.winfo_exists():
+    def redimensionar_fondo_canvas(self, evento=None):
+        if not self.imagen_original or not self.canvas.winfo_exists():
             return
 
-        ancho = self.f_central.winfo_width()
-        alto = self.f_central.winfo_height()
+        # Obtenemos el ancho y alto en tiempo real de la ventana de la App
+        ancho = self.canvas.winfo_width()
+        alto = self.canvas.winfo_height()
 
         if ancho <= 1 or alto <= 1:
             return
 
+
         imagen_rediseñada = self.imagen_original.resize((ancho, alto), Image.Resampling.LANCZOS)
         self.foto_fondo = ImageTk.PhotoImage(imagen_rediseñada)
-        self.lbl_fondo_azul.config(image=self.foto_fondo)
+        
+        # Limpiamos y dibujamos el fondo
+        self.canvas.delete("all")
+        self.canvas.create_image(0, 0, anchor="nw", image=self.foto_fondo)
+
+        pos_x = (ancho - 935) // 2
+        pos_y = (alto - 540) // 2
+        
+
+        self.canvas.create_window(max(0, pos_x), max(0, pos_y), anchor="nw", window=self.f_componentes)
 
     def bloquear_formularios(self):
-        self.btn_cerrar.config(state="disabled",
-                                text="Configuracion Cerrada",
-                                bg="#333333")
+        self.btn_cerrar.config(state="disabled", text="Configuracion Cerrada", bg="#FFFFFF")
 
     def actualizar_desplegables(self):
         lista_ids = []
@@ -531,11 +540,13 @@ class PantallaConfiguracion:
 
             menu = self.menu_e1["menu"]
             menu.delete(0, "end")
+            self.menu_e1.config(highlightbackground="#edcbf6", highlightthickness=0)
             for item in lista_ids:
                 menu.add_command(label=item, command=tk._setit(self.var_e1, item))
 
             menu2 = self.menu_e2["menu"]
             menu2.delete(0, "end")
+            self.menu_e2.config(highlightbackground="#edcbf6", highlightthickness=0)
             for item in lista_ids:
                 menu2.add_command(label=item, command=tk._setit(self.var_e2, item))
 
@@ -650,13 +661,13 @@ class PantallaResultados:
         # Inicializamos la cola con los partidos pendientes
         inicializar_cola_partidos()
 
-        f_cuerpo = tk.Frame(self.contenedor, bg="#1a1a2e")
+        f_cuerpo = tk.Frame(self.contenedor, bg="#edcbf6")
         f_cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
 
         # Titulo de la cola
         tk.Label(f_cuerpo,
                  text="COLA DE PARTIDOS PENDIENTES  (se procesan en orden de registro)",
-                 bg="#1a1a2e", fg="#f5a623",
+                 bg="#bc83b6", fg="#ffffff",
                  font=("Arial", 11, "bold")).pack(anchor="w", pady=5)
 
         # Tabla que muestra la cola de partidos
@@ -674,44 +685,44 @@ class PantallaResultados:
         # Frame del formulario de marcador (deshabilitado hasta que se seleccione un partido)
         f_marcador = tk.LabelFrame(f_cuerpo,
                                     text="  Ingresar Marcador del Partido Seleccionado  ",
-                                    bg="#16213e", fg="white",
+                                    bg="#943976", fg="white",
                                     font=("Arial", 10, "bold"))
         f_marcador.pack(fill="x", pady=12, ipady=8)
 
         # Label que muestra que partido esta seleccionado
         self.lbl_vs = tk.Label(f_marcador,
                                 text="Seleccione un partido de la cola de arriba",
-                                bg="#16213e", fg="#f5a623",
+                                bg="#943976", fg="#ffffff",
                                 font=("Arial", 12, "bold"))
         self.lbl_vs.pack(pady=8)
 
         # Frame para los campos de goles
-        f_goles = tk.Frame(f_marcador, bg="#16213e")
+        f_goles = tk.Frame(f_marcador, bg="#6f0c50")
         f_goles.pack()
 
-        tk.Label(f_goles, text="Goles Local:", bg="#16213e", fg="white").grid(row=0, column=0, padx=10, pady=5)
+        tk.Label(f_goles, text="Goles Local:", bg="#6f0c50", fg="white").grid(row=0, column=0, padx=10, pady=5)
         self.ent_gl = tk.Entry(f_goles, width=8, state="disabled")
         self.ent_gl.grid(row=0, column=1, padx=10, pady=5)
 
-        tk.Label(f_goles, text="Goles Visitante:", bg="#16213e", fg="white").grid(row=0, column=2, padx=10, pady=5)
+        tk.Label(f_goles, text="Goles Visitante:", bg="#6f0c50", fg="white").grid(row=0, column=2, padx=10, pady=5)
         self.ent_gv = tk.Entry(f_goles, width=8, state="disabled")
         self.ent_gv.grid(row=0, column=3, padx=10, pady=5)
 
-        tk.Label(f_goles, text="Penales Local:", bg="#16213e", fg="white").grid(row=1, column=0, padx=10, pady=5)
+        tk.Label(f_goles, text="Penales Local:", bg="#6f0c50", fg="white").grid(row=1, column=0, padx=10, pady=5)
         self.ent_pl = tk.Entry(f_goles, width=8, state="disabled")
         self.ent_pl.grid(row=1, column=1, padx=10, pady=5)
 
-        tk.Label(f_goles, text="Penales Visitante:", bg="#16213e", fg="white").grid(row=1, column=2, padx=10, pady=5)
+        tk.Label(f_goles, text="Penales Visitante:", bg="#6f0c50", fg="white").grid(row=1, column=2, padx=10, pady=5)
         self.ent_pv = tk.Entry(f_goles, width=8, state="disabled")
         self.ent_pv.grid(row=1, column=3, padx=10, pady=5)
 
         # Frame para los botones de accion
-        f_botones = tk.Frame(f_cuerpo, bg="#1a1a2e")
+        f_botones = tk.Frame(f_cuerpo, bg="#5e1e47")
         f_botones.pack(pady=10)
 
         self.btn_registrar = tk.Button(f_botones,
                                         text="⚽  Registrar Resultado",
-                                        bg="#0f3460", fg="white",
+                                        bg="#9c3978", fg="white",
                                         font=("Arial", 10, "bold"),
                                         state="disabled",
                                         command=self.registrar_marcador)
@@ -719,21 +730,21 @@ class PantallaResultados:
 
         self.btn_suspender = tk.Button(f_botones,
                                         text="⛔  Suspender Partido",
-                                        bg="#e94560", fg="white",
+                                        bg="#9c3978", fg="white",
                                         state="disabled",
                                         command=self.suspender_partido)
         self.btn_suspender.grid(row=0, column=1, padx=10)
 
         self.btn_reanudar = tk.Button(f_botones,
                                        text="🔄  Reanudar Partido",
-                                       bg="#0f3460", fg="white",
+                                       bg="#9c3978", fg="white",
                                        state="disabled",
                                        command=self.reanudar_partido)
         self.btn_reanudar.grid(row=0, column=2, padx=10)
 
         tk.Button(f_cuerpo,
                   text="⬅  Volver al Menu",
-                  bg="#0f3460", fg="white",
+                  bg="#9c3978", fg="white",
                   command=self.app.volver_atras).pack(pady=12)
 
         # Variable que guarda el partido actualmente seleccionado
@@ -905,36 +916,36 @@ class PantallaInformes:
         self.app.crear_encabezado(self.contenedor)
 
         # Barra de botones para elegir el informe
-        f_barra = tk.Frame(self.contenedor, bg="#16213e", pady=6)
+        f_barra = tk.Frame(self.contenedor, bg="#651765", pady=6)
         f_barra.pack(fill="x")
 
         tk.Button(f_barra, text="INF 1\nPartidos x Fecha",
-                  width=14, bg="#0f3460", fg="white",
+                  width=14, bg="#cb3ba9", fg="white",
                   command=self.mostrar_informe1).grid(row=0, column=0, padx=4)
 
         tk.Button(f_barra, text="INF 2\nPosiciones Grupo",
-                  width=14, bg="#0f3460", fg="white",
+                  width=14, bg="#cb3ba9", fg="white",
                   command=self.mostrar_informe2).grid(row=0, column=1, padx=4)
 
         tk.Button(f_barra, text="INF 3\nHistorial Equipo",
-                  width=14, bg="#0f3460", fg="white",
+                  width=14, bg="#cb3ba9", fg="white",
                   command=self.mostrar_informe3).grid(row=0, column=2, padx=4)
 
         tk.Button(f_barra, text="INF 4\nProximo Partido",
-                  width=14, bg="#0f3460", fg="white",
+                  width=14, bg="#cb3ba9", fg="white",
                   command=self.mostrar_informe4).grid(row=0, column=3, padx=4)
 
         tk.Button(f_barra, text="INF 5\nClasif. General",
-                  width=14, bg="#0f3460", fg="white",
+                  width=14, bg="#cb3ba9", fg="white",
                   command=self.mostrar_informe5).grid(row=0, column=4, padx=4)
 
         tk.Button(f_barra, text="⬅ Volver",
-                  width=10, bg="#e94560", fg="white",
+                  width=10, bg="#6a0c43", fg="white",
                   font=("Arial", 10, "bold"),
                   command=self.app.volver_atras).grid(row=0, column=5, padx=20)
 
         # Zona donde se renderiza el informe seleccionado
-        self.f_zona = tk.Frame(self.contenedor, bg="#1a1a2e")
+        self.f_zona = tk.Frame(self.contenedor, bg="#681345")
         self.f_zona.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Mostramos el informe 1 por defecto
@@ -951,14 +962,14 @@ class PantallaInformes:
 
         tk.Label(self.f_zona,
                  text="INFORME 1 – PARTIDOS POR FECHA",
-                 bg="#1a1a2e", fg="#f5a623",
+                 bg="#700a3f", fg="#ffffff",
                  font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
 
         # Fila de busqueda
-        f_busq = tk.Frame(self.f_zona, bg="#1a1a2e")
+        f_busq = tk.Frame(self.f_zona, bg="#700a3f")
         f_busq.pack(anchor="w", pady=5)
 
-        tk.Label(f_busq, text="Fecha (AAAA-MM-DD):", bg="#1a1a2e", fg="white").pack(side="left", padx=5)
+        tk.Label(f_busq, text="Fecha (AAAA-MM-DD):", bg="#700a3f", fg="white").pack(side="left", padx=5)
         ent_fecha = tk.Entry(f_busq, width=14)
         ent_fecha.pack(side="left", padx=5)
 
@@ -995,7 +1006,7 @@ class PantallaInformes:
                 messagebox.showinfo("Sin resultados", "No hay partidos para la fecha ingresada.")
 
         tk.Button(f_busq, text="Buscar",
-                  bg="#0f3460", fg="white",
+                  bg="#cb3ba9", fg="white",
                   command=buscar).pack(side="left", padx=8)
 
     # INFORME 2: tabla de posiciones de un grupo
@@ -1004,13 +1015,13 @@ class PantallaInformes:
 
         tk.Label(self.f_zona,
                  text="INFORME 2 – TABLA DE POSICIONES DE UN GRUPO",
-                 bg="#1a1a2e", fg="#f5a623",
+                 bg="#681345", fg="#ffffff",
                  font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
 
-        f_ctrl = tk.Frame(self.f_zona, bg="#1a1a2e")
+        f_ctrl = tk.Frame(self.f_zona, bg="#A43C79")
         f_ctrl.pack(anchor="w", pady=5)
 
-        tk.Label(f_ctrl, text="Grupo:", bg="#1a1a2e", fg="white").pack(side="left", padx=5)
+        tk.Label(f_ctrl, text="Grupo:", bg="#891D5C", fg="white").pack(side="left", padx=5)
         var_g = tk.StringVar(f_ctrl)
         var_g.set("A")
         opciones = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
@@ -1042,7 +1053,7 @@ class PantallaInformes:
                 pos += 1
 
         tk.Button(f_ctrl, text="Consultar",
-                  bg="#0f3460", fg="white",
+                  bg="#cb3ba9", fg="white",
                   command=consultar).pack(side="left", padx=8)
         consultar()   # cargamos el grupo A por defecto al abrir
 
@@ -1052,7 +1063,7 @@ class PantallaInformes:
 
         tk.Label(self.f_zona,
                  text="INFORME 3 – HISTORIAL Y AVANCE DE UN EQUIPO",
-                 bg="#1a1a2e", fg="#f5a623",
+                 bg="#891D5C", fg="#ffffff",
                  font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
 
         # Armamos la lista de paises para el desplegable
@@ -1063,19 +1074,19 @@ class PantallaInformes:
         if len(lista_paises) == 0:
             tk.Label(self.f_zona,
                      text="No hay equipos registrados en el sistema.",
-                     fg="red", bg="#1a1a2e").pack()
+                     fg="red", bg="#891D5C").pack()
             return
 
-        f_ctrl = tk.Frame(self.f_zona, bg="#1a1a2e")
+        f_ctrl = tk.Frame(self.f_zona, bg="#681345")
         f_ctrl.pack(anchor="w", pady=5)
 
-        tk.Label(f_ctrl, text="Equipo:", bg="#1a1a2e", fg="white").pack(side="left", padx=5)
+        tk.Label(f_ctrl, text="Equipo:", bg="#681345", fg="white").pack(side="left", padx=5)
         var_e = tk.StringVar(f_ctrl)
         var_e.set(lista_paises[0])
         tk.OptionMenu(f_ctrl, var_e, *lista_paises).pack(side="left", padx=5)
 
         # Caja de texto para mostrar el historial
-        txt = tk.Text(self.f_zona, bg="#16213e", fg="white",
+        txt = tk.Text(self.f_zona, bg="#681345", fg="white",
                        font=("Courier", 10), state="disabled")
         scroll = tk.Scrollbar(self.f_zona, orient="vertical", command=txt.yview)
         txt.configure(yscrollcommand=scroll.set)
@@ -1122,7 +1133,7 @@ class PantallaInformes:
             txt.config(state="disabled")
 
         tk.Button(f_ctrl, text="Ver Historial",
-                  bg="#0f3460", fg="white",
+                  bg="#cb3ba9", fg="white",
                   command=ver_historial).pack(side="left", padx=8)
         ver_historial()   # cargamos el primer equipo por defecto
 
@@ -1132,7 +1143,7 @@ class PantallaInformes:
 
         tk.Label(self.f_zona,
                  text="INFORME 4 – PROXIMO PARTIDO DE UN EQUIPO",
-                 bg="#1a1a2e", fg="#f5a623",
+                 bg="#A43C79", fg="#ffffff",
                  font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
 
         lista_paises = []
@@ -1142,18 +1153,18 @@ class PantallaInformes:
         if len(lista_paises) == 0:
             tk.Label(self.f_zona,
                      text="No hay equipos registrados.",
-                     fg="red", bg="#1a1a2e").pack()
+                     fg="red", bg="#A43C79").pack()
             return
 
-        f_ctrl = tk.Frame(self.f_zona, bg="#1a1a2e")
+        f_ctrl = tk.Frame(self.f_zona, bg="#A43C79")
         f_ctrl.pack(anchor="w", pady=5)
 
-        tk.Label(f_ctrl, text="Equipo:", bg="#1a1a2e", fg="white").grid(row=0, column=0, padx=5)
+        tk.Label(f_ctrl, text="Equipo:", bg="#A43C79", fg="white").grid(row=0, column=0, padx=5)
         var_e = tk.StringVar(f_ctrl)
         var_e.set(lista_paises[0])
         tk.OptionMenu(f_ctrl, var_e, *lista_paises).grid(row=0, column=1, padx=5)
 
-        tk.Label(f_ctrl, text="Desde fecha (AAAA-MM-DD):", bg="#1a1a2e", fg="white").grid(row=0, column=2, padx=5)
+        tk.Label(f_ctrl, text="Desde fecha (AAAA-MM-DD):", bg="#A43C79", fg="white").grid(row=0, column=2, padx=5)
         ent_fecha = tk.Entry(f_ctrl, width=14)
         ent_fecha.insert(0, "2026-06-11")   # fecha de inicio del mundial como default
         ent_fecha.grid(row=0, column=3, padx=5)
@@ -1161,7 +1172,7 @@ class PantallaInformes:
         # Label grande para mostrar el resultado
         lbl_res = tk.Label(self.f_zona,
                             text="",
-                            bg="#16213e", fg="white",
+                            bg="#A43C79", fg="white",
                             font=("Arial", 11),
                             relief="solid", bd=1,
                             padx=20, pady=20,
@@ -1198,12 +1209,12 @@ class PantallaInformes:
                           "Lugar:  " + proximo.lugar + "\n" +
                           "Partido: " + proximo.identificador1 + "  vs  " + proximo.identificador2 + "\n" +
                           "Estado: " + proximo.estado.upper())
-                lbl_res.config(text=texto, fg="#f5a623")
+                lbl_res.config(text=texto, fg="#ffffff")
             else:
                 lbl_res.config(text="Sin partidos programados desde la fecha indicada.", fg="red")
 
         tk.Button(f_ctrl, text="Buscar Proximo",
-                  bg="#0f3460", fg="white",
+                  bg="#b9369a", fg="white",
                   command=buscar_proximo).grid(row=0, column=4, padx=12)
         buscar_proximo()   # cargamos el resultado por defecto
 
@@ -1213,18 +1224,18 @@ class PantallaInformes:
 
         tk.Label(self.f_zona,
                  text="INFORME 5 – CLASIFICACION GENERAL (todos los grupos)",
-                 bg="#1a1a2e", fg="#f5a623",
+                 bg="#7D1351", fg="#ffffff",
                  font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
 
         # Canvas con scrollbar para poder desplazarse entre los 12 grupos
-        f_scroll = tk.Frame(self.f_zona, bg="#1a1a2e")
+        f_scroll = tk.Frame(self.f_zona, bg="#681345")
         f_scroll.pack(fill="both", expand=True)
 
-        canvas = tk.Canvas(f_scroll, bg="#1a1a2e", highlightthickness=0)
+        canvas = tk.Canvas(f_scroll, bg="#681345", highlightthickness=0)
         scrollbar = tk.Scrollbar(f_scroll, orient="vertical", command=canvas.yview)
 
         # Frame interno donde se colocan las tablas de cada grupo
-        f_interno = tk.Frame(canvas, bg="#1a1a2e")
+        f_interno = tk.Frame(canvas, bg="#AA407E")
 
         # Cada vez que el frame interno cambie de tamanio, actualizamos el scroll
         f_interno.bind("<Configure>",
@@ -1247,7 +1258,7 @@ class PantallaInformes:
                 # Caja con el titulo del grupo
                 f_caja = tk.LabelFrame(f_interno,
                                         text="  GRUPO " + g + "  ",
-                                        bg="#16213e", fg="#f5a623",
+                                        bg="#FFA9EC", fg="#ffffff",
                                         font=("Arial", 11, "bold"),
                                         padx=10, pady=5)
                 f_caja.pack(fill="x", pady=8, padx=5)
@@ -1258,7 +1269,7 @@ class PantallaInformes:
                 for col_i, (texto, ancho) in enumerate(columnas):
                     tk.Label(f_caja,
                               text=texto,
-                              bg="#16213e", fg="#f5a623",
+                              bg="#EE7FC0", fg="#ffffff",
                               font=("Arial", 9, "bold"),
                               width=ancho).grid(row=0, column=col_i)
 
@@ -1273,11 +1284,11 @@ class PantallaInformes:
 
                     for col_i, (dato, ancho) in enumerate(zip(datos_fila, anchos_fila)):
                         # Los puntos van en dorado para destacarlos
-                        color = "#f5a623" if col_i == 9 else "white"
+                        color = "#ffffff" if col_i == 9 else "white"
                         negrita = "bold" if col_i == 9 else "normal"
                         tk.Label(f_caja,
                                   text=dato,
-                                  bg="#16213e", fg=color,
+                                  bg="#994E7A", fg=color,
                                   font=("Arial", 9, negrita),
                                   width=ancho).grid(row=pos, column=col_i)
                     pos += 1
