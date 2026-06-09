@@ -4,6 +4,7 @@ from tkinter import ttk               # para tablas avanzadas (Treeview)
 import os                             # para verificar si existe un archivo
 import time                           # para obtener la hora actual
 from PIL import Image, ImageTk       # para manejar imagenes y usarlas como fondo
+import os
 from conf_torneo import torneo_actual
 from clases import equipo, partido
 
@@ -1283,27 +1284,24 @@ class PantallaInformes:
         buscar_proximo()   # Carga el resultado por defecto al iniciar la pantalla
 
     # INFORME 5: clasificacion general de todos los grupos
+
     def mostrar_informe5(self):
         self.limpiar_zona()
 
         tk.Label(self.f_zona,
-                 text="INFORME 5 – CLASIFICACION GENERAL (todos los grupos)",
-                 bg="#7D1351", fg="#ffffff",
-                 font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
+                text="INFORME 5 – CLASIFICACION GENERAL (todos los grupos)",
+                bg="#7D1351", fg="#ffffff",
+                font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
 
-        # Canvas con scrollbar para poder desplazarse entre los 12 grupos
         f_scroll = tk.Frame(self.f_zona, bg="#681345")
         f_scroll.pack(fill="both", expand=True)
 
         canvas = tk.Canvas(f_scroll, bg="#681345", highlightthickness=0)
         scrollbar = tk.Scrollbar(f_scroll, orient="vertical", command=canvas.yview)
 
-        # Frame interno donde se colocan las tablas de cada grupo
         f_interno = tk.Frame(canvas, bg="#AA407E")
-
-        # Cada vez que el frame interno cambie de tamanio, actualizamos el scroll
         f_interno.bind("<Configure>",
-                        lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+                    lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
         canvas.create_window((0, 0), window=f_interno, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
@@ -1311,51 +1309,65 @@ class PantallaInformes:
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
-        # Recorremos los 12 grupos de la A a la L
-        grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+        grupos = ["A","B","C","D","E","F","G","H","I","J","K","L"]
+
+        # Mantener referencias de imágenes
+        self.img_refs = {}
 
         for g in grupos:
             lista_grupo = torneo_actual.tabla_posiciones(g)
-
-            # Solo mostramos los grupos que tienen equipos registrados
             if len(lista_grupo) > 0:
-                # Caja con el titulo del grupo
                 f_caja = tk.LabelFrame(f_interno,
-                                        text="  GRUPO " + g + "  ",
-                                        bg="#FFA9EC", fg="#ffffff",
-                                        font=("Arial", 11, "bold"),
-                                        padx=10, pady=5)
+                                    text="  GRUPO " + g + "  ",
+                                    bg="#FFA9EC", fg="#ffffff",
+                                    font=("Arial", 11, "bold"),
+                                    padx=10, pady=5)
                 f_caja.pack(fill="x", pady=8, padx=5)
 
-                # Encabezado de columnas
-                columnas = [("Pos", 5), ("Pais", 22), ("PJ", 5), ("G", 5),
-                             ("E", 5), ("P", 5), ("GF", 5), ("GC", 5), ("DG", 6), ("Pts", 6)]
-                for col_i, (texto, ancho) in enumerate(columnas):
-                    tk.Label(f_caja,
-                              text=texto,
-                              bg="#EE7FC0", fg="#ffffff",
-                              font=("Arial", 9, "bold"),
-                              width=ancho).grid(row=0, column=col_i)
+                columnas = [("Pos",5),("Pais",22),("PJ",5),("G",5),
+                            ("E",5),("P",5),("GF",5),("GC",5),("DG",6),("Pts",6)]
+                for col_i,(texto,ancho) in enumerate(columnas):
+                    tk.Label(f_caja,text=texto,
+                            bg="#EE7FC0",fg="#ffffff",
+                            font=("Arial",9,"bold"),
+                            width=ancho).grid(row=0,column=col_i)
 
-                # Fila de cada equipo
                 pos = 1
                 for eq in lista_grupo:
                     dg = eq.goles_a - eq.goles_c
                     datos_fila = [str(pos), eq.pais, str(eq.total_p), str(eq.ganados),
-                                   str(eq.empate), str(eq.perdidos),
-                                   str(eq.goles_a), str(eq.goles_c), str(dg), str(eq.puntos)]
-                    anchos_fila = [5, 22, 5, 5, 5, 5, 5, 5, 6, 6]
+                                str(eq.empate), str(eq.perdidos),
+                                str(eq.goles_a), str(eq.goles_c), str(dg), str(eq.puntos)]
+                    anchos_fila = [5,22,5,5,5,5,5,5,6,6]
 
-                    for col_i, (dato, ancho) in enumerate(zip(datos_fila, anchos_fila)):
-                        # Los puntos van en dorado para destacarlos
+                    for col_i,(dato,ancho) in enumerate(zip(datos_fila,anchos_fila)):
                         color = "#ffffff" if col_i == 9 else "white"
                         negrita = "bold" if col_i == 9 else "normal"
-                        tk.Label(f_caja,
-                                  text=dato,
-                                  bg="#994E7A", fg=color,
-                                  font=("Arial", 9, negrita),
-                                  width=ancho).grid(row=pos, column=col_i)
+
+                        if col_i == 1:  # columna País → bandera + texto
+                            try:
+                                ruta = os.path.join("banderas", eq.pais + ".png")
+                                img = Image.open(ruta).resize((25,15), Image.Resampling.LANCZOS)
+                                foto = ImageTk.PhotoImage(img)
+                                self.img_refs[eq.pais] = foto
+                                lbl = tk.Label(f_caja, text=dato,
+                                            image=foto, compound="left",
+                                            bg="#994E7A", fg=color,
+                                            font=("Arial",9,negrita),
+                                            width=ancho)
+                            except Exception:
+                                lbl = tk.Label(f_caja, text=dato,
+                                            bg="#994E7A", fg=color,
+                                            font=("Arial",9,negrita),
+                                            width=ancho)
+                            lbl.grid(row=pos,column=col_i)
+                        else:
+                            tk.Label(f_caja,text=dato,
+                                    bg="#994E7A",fg=color,
+                                    font=("Arial",9,negrita),
+                                    width=ancho).grid(row=pos,column=col_i)
                     pos += 1
+
 
 # ARRANQUE DE LA APLICACION
 if __name__ == "__main__":
