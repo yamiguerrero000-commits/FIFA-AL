@@ -3,7 +3,7 @@ from tkinter import messagebox        # para mostrar carteles emergentes de aler
 from tkinter import ttk               # para tablas avanzadas (Treeview)
 import os                             # para verificar si existe un archivo
 import time                           # para obtener la hora actual
-
+from PIL import Image, ImageTk       # para manejar imagenes y usarlas como fondo
 from conf_torneo import torneo_actual
 from clases import equipo, partido
 
@@ -159,12 +159,12 @@ class Aplicacion:
         estilo = ttk.Style()
         estilo.theme_use("clam")
         estilo.configure("Treeview",
-                         background="#16213e",
-                         fieldbackground="#16213e",
+                         background="#600f45",
+                         fieldbackground="#600b45",
                          foreground="white",
                          font=("Arial", 10))
         estilo.configure("Treeview.Heading",
-                         background="#0f3460",
+                         background="#600f45",
                          foreground="#f5a623",
                          font=("Arial", 10, "bold"))
         estilo.map("Treeview", background=[("selected", "#e94560")])
@@ -173,114 +173,137 @@ class Aplicacion:
         self.contenedor = tk.Frame(self.raiz, bg="#1a1a2e")
         self.contenedor.pack(fill="both", expand=True)
 
+        # Cargar imagen de fondo de forma segura
+        try:
+            self.imagen_original = Image.open("fondo.png") 
+            self.foto_fondo = None
+        except Exception as e:
+            print(f"No se pudo cargar la imagen de fondo: {e}")
+            self.imagen_original = None
+            self.foto_fondo = None
+
+        # Vinculamos el contenedor al evento de cambio de tamaño dinámico
+        self.contenedor.bind("<Configure>", self.redimensionar_fondo)
+
         # Cuando el usuario cierra con la X, guardamos datos primero
         self.raiz.protocol("WM_DELETE_WINDOW", self.salir_aplicacion)
 
         # Mostramos el menu principal al iniciar
         self.mostrar_menu_principal()
 
+    def redimensionar_fondo(self, evento=None):
+        if not self.imagen_original or not self.contenedor.winfo_exists():
+            return
+
+        ancho = self.contenedor.winfo_width()
+        alto = self.contenedor.winfo_height()
+
+        if ancho <= 1 or alto <= 1:
+            return
+
+        imagen_rediseñada = self.imagen_original.resize((ancho, alto), Image.Resampling.LANCZOS)
+        self.foto_fondo = ImageTk.PhotoImage(imagen_rediseñada)
+
+        for widget in self.contenedor.winfo_children():
+            if isinstance(widget, tk.Label) and widget.winfo_manager() == "place":
+                widget.config(image=self.foto_fondo)
+                break
+
     def crear_encabezado(self, frame_destino):
-        # Este encabezado aparece en TODAS las pantallas (obligatorio segun el TP)
-        f_header = tk.Frame(frame_destino, bg="#16213e", pady=8)
+        f_header = tk.Frame(frame_destino, bg="#d80988", pady=8)
         f_header.pack(fill="x", side="top")
 
-        # Nombre de la materia
         tk.Label(f_header,
                  text="Algoritmos y Estructuras de Datos II  –  Facultad Politecnica  –  UNA",
-                 bg="#16213e", fg="#f5a623",
+                 bg="#d80988", fg="#16213e",
                  font=("Arial", 10, "bold")).pack()
 
-        # Nombre de la aplicacion
         tk.Label(f_header,
                  text="⚽  Sistema de Gestion  –  Copa Mundial FIFA 2026",
-                 bg="#16213e", fg="white",
+                 bg="#d80988", fg="white",
                  font=("Arial", 14, "bold")).pack(pady=2)
 
-        # Reloj en tiempo real: se actualiza cada 1 segundo con after()
-        lbl_reloj = tk.Label(f_header, text="", bg="#16213e", fg="#aaaaaa",
+        lbl_reloj = tk.Label(f_header, text="", bg="#d80988", fg="#222222",
                              font=("Arial", 10))
         lbl_reloj.pack()
 
         def actualizar_reloj():
-            # Obtenemos la hora actual y la mostramos en el label
             lbl_reloj.config(text=time.strftime("%d/%m/%Y   %H:%M:%S"))
-            # Llamamos a esta misma funcion de nuevo en 1000 ms (1 segundo)
             self.raiz.after(1000, actualizar_reloj)
 
-        actualizar_reloj()   # arrancamos el reloj por primera vez
+        actualizar_reloj()
 
     def limpiar_contenedor(self):
-        # Borramos todos los widgets del contenedor para pintar la nueva pantalla
         for widget in self.contenedor.winfo_children():
             widget.destroy()
 
+        if self.imagen_original:
+            lbl_fondo = tk.Label(self.contenedor)
+            lbl_fondo.place(x=0, y=0, relwidth=1, relheight=1)
+            self.redimensionar_fondo()
+
     def mostrar_menu_principal(self):
         self.limpiar_contenedor()
-
-        # Apilamos "MENU" en la pila de historial (push)
         historial_pantallas.append("MENU")
-
         self.crear_encabezado(self.contenedor)
 
-        # Panel central con los botones del menu
-        panel = tk.Frame(self.contenedor, bg="#16213e", padx=60, pady=30)
+        # 🟢 CAMBIO: Se cambió el fondo del panel central (recuadro de los botones) a #d80988
+        panel = tk.Frame(self.contenedor, bg="#d80988", padx=60, pady=30)
         panel.pack(pady=50)
 
+        # 🟢 CAMBIO: Se cambió el fondo a #d80988 y las letras a blanco (fg="white") para mejor lectura
         tk.Label(panel, text="MENU PRINCIPAL",
-                 bg="#16213e", fg="#f5a623",
+                 bg="#d80988", fg="white",
                  font=("Arial", 18, "bold")).pack(pady=20)
 
-        # Boton 1: siempre disponible
+        # Boton 1
         btn1 = tk.Button(panel,
                          text="1.  Configuracion del Torneo",
                          width=38, height=2,
-                         bg="#0f3460", fg="white",
+                         bg="#600f45", fg="white",
                          font=("Arial", 11, "bold"),
                          activebackground="#e94560",
                          command=self.abrir_configuracion)
         btn1.pack(pady=8)
 
-        # Boton 2: se deshabilita si la configuracion no esta cerrada
+        # Boton 2
         btn2 = tk.Button(panel,
                          text="2.  Registro de Resultados",
                          width=38, height=2,
-                         bg="#0f3460", fg="white",
+                         bg="#600f45", fg="white",
                          font=("Arial", 11, "bold"),
                          activebackground="#e94560",
                          command=self.abrir_resultados)
         btn2.pack(pady=8)
 
-        # Boton 3: igual que el 2
+        # Boton 3
         btn3 = tk.Button(panel,
                          text="3.  Emision de Informes",
                          width=38, height=2,
-                         bg="#0f3460", fg="white",
+                         bg="#600f45", fg="white",
                          font=("Arial", 11, "bold"),
                          activebackground="#e94560",
                          command=self.abrir_informes)
         btn3.pack(pady=8)
 
-        # Si la configuracion NO esta cerrada, deshabilitamos 2 y 3
         if not torneo_actual.datos:
             btn2.config(state="disabled", bg="#333333", fg="#777777")
             btn3.config(state="disabled", bg="#333333", fg="#777777")
 
-        # Boton 4: salir
+        # Boton 4: Salir
         btn4 = tk.Button(panel,
                          text="4.  Salir",
                          width=38, height=2,
-                         bg="#e94560", fg="white",
+                         bg="#600f45", fg="white",
                          font=("Arial", 11, "bold"),
-                         activebackground="#0f3460",
+                         activebackground="#e94560",
                          command=self.salir_aplicacion)
         btn4.pack(pady=8)
 
     def volver_atras(self):
-        # Sacamos la pantalla actual de la pila (pop)
         if len(historial_pantallas) > 0:
             historial_pantallas.pop()
 
-        # Miramos que habia antes en la pila
         if len(historial_pantallas) > 0:
             anterior = historial_pantallas[len(historial_pantallas) - 1]
             if anterior == "MENU":
@@ -303,7 +326,6 @@ class Aplicacion:
         PantallaInformes(self.contenedor, self)
 
     def salir_aplicacion(self):
-        # Preguntamos al usuario si quiere guardar antes de cerrar
         confirmar = messagebox.askyesno("Salir",
                                         "Desea guardar los datos y cerrar el sistema?")
         if confirmar:
@@ -326,9 +348,15 @@ class PantallaConfiguracion:
         f_cuerpo = tk.Frame(self.contenedor, bg="#1a1a2e")
         f_cuerpo.pack(fill="both", expand=True, padx=15, pady=10)
 
-        # FORMULARIO DE EQUIPOS (lado izquierdo)
-        f_equipo = tk.LabelFrame(f_cuerpo,
-                                  text="  Registrar Equipo  ",
+        # 🟢 CORRECCIÓN: Creamos un sub-contenedor con el ancho exacto del contenido
+        # Al usar expand=True en el pack, Tkinter lo centrará automáticamente en la pantalla
+        f_central = tk.Frame(f_cuerpo, bg="#1a1a2e", width=935, height=540)
+        f_central.pack(expand=True)
+        f_central.pack_propagate(False) # Evita que el frame se encoja
+
+        # FORMULARIO DE EQUIPOS (lado izquierdo) - Ahora dentro de f_central
+        f_equipo = tk.LabelFrame(f_central,
+                                  text="   Registrar Equipo   ",
                                   bg="#16213e", fg="#f5a623",
                                   font=("Arial", 11, "bold"))
         f_equipo.place(x=5, y=5, width=455, height=240)
@@ -351,7 +379,7 @@ class PantallaConfiguracion:
         self.ent_pref = tk.Entry(f_equipo, width=18)
         self.ent_pref.grid(row=1, column=3, padx=5, pady=6, sticky="w")
 
-        # Fila 2: Confederacion (lista desplegable) y Grupo (lista desplegable)
+        # Fila 2: Confederacion y Grupo
         tk.Label(f_equipo, text="Confederacion:", bg="#16213e", fg="white").grid(row=2, column=0, padx=5, pady=6, sticky="w")
         self.var_conf = tk.StringVar(f_equipo)
         self.var_conf.set("UEFA")
@@ -369,9 +397,9 @@ class PantallaConfiguracion:
                   bg="#0f3460", fg="white", font=("Arial", 10, "bold"),
                   command=self.guardar_equipo).grid(row=3, column=0, columnspan=4, pady=12)
 
-        # FORMULARIO DE PARTIDOS (lado derecho)
-        f_partido = tk.LabelFrame(f_cuerpo,
-                                   text="  Registrar Partido  ",
+        # FORMULARIO DE PARTIDOS (lado derecho) - Ahora dentro de f_central
+        f_partido = tk.LabelFrame(f_central,
+                                   text="   Registrar Partido   ",
                                    bg="#16213e", fg="#f5a623",
                                    font=("Arial", 11, "bold"))
         f_partido.place(x=475, y=5, width=455, height=240)
@@ -390,7 +418,7 @@ class PantallaConfiguracion:
         self.ent_lug = tk.Entry(f_partido, width=38)
         self.ent_lug.grid(row=1, column=1, columnspan=3, padx=5, pady=6, sticky="w")
 
-        # Fila 2: Equipo 1 y Equipo 2 (listas desplegables con los equipos registrados)
+        # Fila 2: Equipo 1 y Equipo 2
         tk.Label(f_partido, text="Equipo 1:", bg="#16213e", fg="white").grid(row=2, column=0, padx=5, pady=6, sticky="w")
         self.var_e1 = tk.StringVar(f_partido)
         self.menu_e1 = tk.OptionMenu(f_partido, self.var_e1, "")
@@ -406,13 +434,13 @@ class PantallaConfiguracion:
                   bg="#0f3460", fg="white", font=("Arial", 10, "bold"),
                   command=self.guardar_partido).grid(row=3, column=0, columnspan=4, pady=12)
 
-        # TABLAS DE LISTADO (Treeview)
-        tk.Label(f_cuerpo, text="Equipos Registrados",
+        # TABLAS DE LISTADO (Treeview) - Ahora dentro de f_central
+        tk.Label(f_central, text="Equipos Registrados",
                  bg="#1a1a2e", fg="white",
                  font=("Arial", 10, "bold")).place(x=5, y=255)
 
         # Tabla de equipos
-        self.tabla_e = ttk.Treeview(f_cuerpo,
+        self.tabla_e = ttk.Treeview(f_central,
                                      columns=("ID", "Pais", "Abrev", "Grupo", "Conf"),
                                      show="headings", height=6)
         for col, ancho in [("ID", 60), ("Pais", 160), ("Abrev", 70), ("Grupo", 60), ("Conf", 100)]:
@@ -420,12 +448,12 @@ class PantallaConfiguracion:
             self.tabla_e.column(col, width=ancho, anchor="center")
         self.tabla_e.place(x=5, y=278, width=455, height=145)
 
-        tk.Label(f_cuerpo, text="Partidos Programados",
+        tk.Label(f_central, text="Partidos Programados",
                  bg="#1a1a2e", fg="white",
                  font=("Arial", 10, "bold")).place(x=475, y=255)
 
         # Tabla de partidos
-        self.tabla_p = ttk.Treeview(f_cuerpo,
+        self.tabla_p = ttk.Treeview(f_central,
                                      columns=("Fecha", "Hora", "Lugar", "Eq1", "Eq2"),
                                      show="headings", height=6)
         for col, ancho in [("Fecha", 90), ("Hora", 55), ("Lugar", 130), ("Eq1", 80), ("Eq2", 80)]:
@@ -433,19 +461,19 @@ class PantallaConfiguracion:
             self.tabla_p.column(col, width=ancho, anchor="center")
         self.tabla_p.place(x=475, y=278, width=455, height=145)
 
-        # BOTONES INFERIORES
-        self.btn_cerrar = tk.Button(f_cuerpo,
-                                     text="🔒  Cerrar Configuracion del Torneo",
+        # BOTONES INFERIORES - Ahora dentro de f_central
+        self.btn_cerrar = tk.Button(f_central,
+                                     text="🔒   Cerrar Configuracion del Torneo",
                                      bg="#e94560", fg="white",
                                      font=("Arial", 11, "bold"),
                                      command=self.cerrar_configuracion)
-        self.btn_cerrar.place(x=280, y=440, width=350, height=38)
+        self.btn_cerrar.place(x=292, y=440, width=350, height=38) # Ajustado x para centrar el botón de 350px
 
-        tk.Button(f_cuerpo,
-                  text="⬅  Volver al Menu",
+        tk.Button(f_central,
+                  text="⬅   Volver al Menu",
                   bg="#0f3460", fg="white",
                   font=("Arial", 10),
-                  command=self.app.volver_atras).place(x=390, y=492, width=160, height=30)
+                  command=self.app.volver_atras).place(x=387, y=492, width=160, height=30) # Ajustado x para centrar el botón de 160px
 
         # Cargamos los datos iniciales en tablas y desplegables
         self.actualizar_tablas()
@@ -456,13 +484,11 @@ class PantallaConfiguracion:
             self.bloquear_formularios()
 
     def bloquear_formularios(self):
-        # Cambiamos el boton para indicar que ya esta cerrado
         self.btn_cerrar.config(state="disabled",
                                 text="Configuracion Cerrada",
                                 bg="#333333")
 
     def actualizar_desplegables(self):
-        # Actualizamos las listas desplegables de equipos con los IDs actuales
         lista_ids = []
         for eq in torneo_actual.equipos:
             lista_ids.append(eq.identificador)
@@ -471,88 +497,73 @@ class PantallaConfiguracion:
             self.var_e1.set(lista_ids[0])
             self.var_e2.set(lista_ids[0])
 
-            # Reconfiguramos el menu 1
             menu = self.menu_e1["menu"]
             menu.delete(0, "end")
             for item in lista_ids:
                 menu.add_command(label=item, command=tk._setit(self.var_e1, item))
 
-            # Reconfiguramos el menu 2
             menu2 = self.menu_e2["menu"]
             menu2.delete(0, "end")
             for item in lista_ids:
                 menu2.add_command(label=item, command=tk._setit(self.var_e2, item))
 
     def actualizar_tablas(self):
-        # Borramos lo que habia en las tablas
         for item in self.tabla_e.get_children():
             self.tabla_e.delete(item)
         for item in self.tabla_p.get_children():
             self.tabla_p.delete(item)
 
-        # Insertamos los equipos actuales
         for eq in torneo_actual.equipos:
             self.tabla_e.insert("", "end",
                                  values=(eq.identificador, eq.pais,
                                          eq.abreviatura, eq.grupo, eq.confederacion))
 
-        # Insertamos los partidos actuales
         for p in torneo_actual.partidos:
             self.tabla_p.insert("", "end",
                                  values=(p.fecha, p.hora, p.lugar,
                                          p.identificador1, p.identificador2))
 
     def guardar_equipo(self):
-        # No se puede agregar si la configuracion esta cerrada
         if torneo_actual.datos:
             messagebox.showerror("Error", "La configuracion ya esta cerrada.")
             return
 
-        # Obtenemos los valores de los campos
         v_id    = self.ent_id.get().strip()
         v_pais  = self.ent_pais.get().strip()
         v_abrev = self.ent_abrev.get().strip().upper()
         v_pref  = self.ent_pref.get().strip()
 
-        # Validacion: todos los campos son obligatorios
         if v_id == "" or v_pais == "" or v_abrev == "" or v_pref == "":
             messagebox.showerror("Error", "Todos los campos son obligatorios.")
             return
 
-        # Validacion: el prefijo debe ser un numero
         if not v_pref.isdigit():
             messagebox.showerror("Error", "El prefijo telefonico debe ser un numero.")
             return
 
-        # Validacion: la abreviatura debe tener exactamente 3 letras
         if len(v_abrev) != 3 or not v_abrev.isalpha():
             messagebox.showerror("Error", "La abreviatura debe tener exactamente 3 letras.")
             return
 
-        # Validacion: el ID no puede estar repetido
         for eq in torneo_actual.equipos:
             if eq.identificador == v_id:
                 messagebox.showerror("Error", "Ya existe un equipo con ese identificador.")
                 return
 
-        # Creamos el objeto equipo y lo registramos en el torneo
         nuevo = equipo(v_id, v_pais, v_abrev, int(v_pref),
                        self.var_conf.get(), self.var_grupo.get())
         torneo_actual.registro_e(nuevo)
 
-        # Limpiamos los campos del formulario
         self.ent_id.delete(0, "end")
         self.ent_pais.delete(0, "end")
         self.ent_abrev.delete(0, "end")
         self.ent_pref.delete(0, "end")
 
-        # Actualizamos tablas y desplegables
         self.actualizar_tablas()
         self.actualizar_desplegables()
         messagebox.showinfo("Exito", "Equipo " + v_pais + " registrado correctamente.")
 
     def guardar_partido(self):
-        # No se puede agregar si la configuracion esta cerrada
         if torneo_actual.datos:
             messagebox.showerror("Error", "La configuracion ya esta cerrada.")
             return
@@ -563,21 +574,17 @@ class PantallaConfiguracion:
         v_e1  = self.var_e1.get()
         v_e2  = self.var_e2.get()
 
-        # Validacion: todos los campos son obligatorios
         if v_fec == "" or v_hor == "" or v_lug == "" or v_e1 == "" or v_e2 == "":
             messagebox.showerror("Error", "Todos los campos son obligatorios.")
             return
 
-        # Validacion: los dos equipos deben ser distintos
         if v_e1 == v_e2:
             messagebox.showerror("Error", "Los dos equipos deben ser distintos.")
             return
 
-        # Creamos el partido con los parametros correctos: (fecha, hora, lugar, id1, id2)
         nuevo_p = partido(v_fec, v_hor, v_lug, v_e1, v_e2)
         torneo_actual.registro_p(nuevo_p)
 
-        # Limpiamos los campos
         self.ent_fec.delete(0, "end")
         self.ent_hor.delete(0, "end")
         self.ent_lug.delete(0, "end")
@@ -586,19 +593,16 @@ class PantallaConfiguracion:
         messagebox.showinfo("Exito", "Partido registrado correctamente.")
 
     def cerrar_configuracion(self):
-        # Necesitamos al menos 2 equipos para cerrar
         if len(torneo_actual.equipos) < 2:
             messagebox.showerror("Error", "Debe registrar al menos 2 equipos antes de cerrar.")
             return
 
-        # Pedimos confirmacion antes de cerrar (accion irreversible)
         confirmar = messagebox.askyesno("Confirmacion",
                                          "Esta seguro de cerrar la configuracion? Esta accion no se puede revertir.")
         if confirmar:
-            torneo_actual.configuracion()   # cierra la configuracion en el modelo
+            torneo_actual.configuracion()
             self.bloquear_formularios()
             messagebox.showinfo("Exito", "Configuracion cerrada. Ya puede registrar resultados e informes.")
-
 
 # PANTALLA 2: REGISTRO DE RESULTADOS
 class PantallaResultados:
