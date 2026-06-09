@@ -939,6 +939,7 @@ class PantallaResultados:
 
             self.actualizar_tabla_cola()
             messagebox.showinfo("Exito", "Resultado registrado y partido removido de la cola.")
+            guardar_datos()  # guardamos cambios en el torneo
         else:
             messagebox.showerror("Error", mensaje)
 
@@ -947,12 +948,14 @@ class PantallaResultados:
             self.partido_seleccionado.suspender()   # metodo de la clase partido
             self.actualizar_tabla_cola()
             messagebox.showinfo("Estado", "Partido marcado como SUSPENDIDO.")
+            guardar_datos()  # guardamos cambios en el torneo
 
     def reanudar_partido(self):
         if self.partido_seleccionado:
             self.partido_seleccionado.reanudar()    # metodo de la clase partido
             self.actualizar_tabla_cola()
             messagebox.showinfo("Estado", "Partido marcado como REPROGRAMADO.")
+            guardar_datos()  # guardamos cambios en el torneo
 
 
 # PANTALLA 3: EMISION DE INFORMES (5 informes)
