@@ -1200,7 +1200,7 @@ class PantallaInformes:
                   command=ver_historial).pack(side="left", padx=8)
         ver_historial()   # cargamos el primer equipo por defecto
 
-# INFORME 4: proximo partido de un equipo desde una fecha
+# #INFORME 4: proximo partido de un equipo desde una fecha
     def mostrar_informe4(self):
         self.limpiar_zona()
 
@@ -1232,15 +1232,23 @@ class PantallaInformes:
         ent_fecha.insert(0, "2026-06-11")   # fecha de inicio del mundial como default
         ent_fecha.grid(row=0, column=3, padx=5)
 
-        # Label grande para mostrar el resultado
-        lbl_res = tk.Label(self.f_zona,
-                            text="",
-                            bg="#A43C79", fg="white",
-                            font=("Arial", 11),
-                            relief="solid", bd=1,
-                            padx=20, pady=20,
-                            justify="left")
-        lbl_res.pack(fill="x", pady=20, padx=10)
+        # CONTENEDOR PRINCIPAL DEL RESULTADO: Cambiamos el Label único por un Frame contenedor
+        f_resultado = tk.Frame(self.f_zona, bg="#A43C79", relief="solid", bd=1)
+        f_resultado.pack(fill="x", pady=20, padx=10)
+
+        # Creamos los 3 sub-componentes internos (Banderas + Texto)
+        lbl_bandera_izq = tk.Label(f_resultado, bg="#A43C79")
+        lbl_bandera_izq.pack(side="left", padx=30)
+
+        lbl_res = tk.Label(f_resultado, text="", bg="#A43C79", fg="white",
+                           font=("Arial", 11), justify="left", padx=10, pady=20)
+        lbl_res.pack(side="left", expand=True, fill="both")
+
+        lbl_bandera_der = tk.Label(f_resultado, bg="#A43C79")
+        lbl_bandera_der.pack(side="right", padx=30)
+
+        # Diccionario auxiliar para no perder la referencia de las 2 imágenes actuales de la pantalla
+        self.img_cache_inf4 = {}
 
         def buscar_proximo():
             nombre  = var_e.get()
@@ -1266,6 +1274,11 @@ class PantallaInformes:
                     if proximo is None or p.fecha < proximo.fecha:
                         proximo = p
 
+            # Limpiamos imágenes anteriores del caché de este informe
+            lbl_bandera_izq.config(image="")
+            lbl_bandera_der.config(image="")
+            self.img_cache_inf4.clear()
+
             if proximo:
                 texto = ("PROXIMO PARTIDO ENCONTRADO\n\n" +
                          "Fecha:  " + proximo.fecha + "    Hora: " + proximo.hora + "\n" +
@@ -1273,8 +1286,35 @@ class PantallaInformes:
                          "Partido: " + proximo.identificador1 + "  vs  " + proximo.identificador2 + "\n" +
                          "Estado: " + proximo.estado.upper())
                 lbl_res.config(text=texto, fg="#ffffff")
-            else:
 
+                # Buscamos los objetos de ambos equipos usando sus identificadores para conocer sus nombres de país
+                eq1 = torneo_actual.busqueda(proximo.identificador1)
+                eq2 = torneo_actual.busqueda(proximo.identificador2)
+
+                # --- CARGA DE BANDERA IZQUIERDA (Equipo 1) ---
+                if isinstance(eq1, equipo):
+                    ruta_izq = os.path.join("banderas", eq1.pais.upper() + ".png")
+                    if os.path.exists(ruta_izq):
+                        try:
+                            img_i = Image.open(ruta_izq).resize((80, 50), Image.Resampling.LANCZOS)
+                            foto_i = ImageTk.PhotoImage(img_i)
+                            self.img_cache_inf4["izq"] = foto_i
+                            lbl_bandera_izq.config(image=foto_i)
+                        except Exception:
+                            pass
+
+                # --- CARGA DE BANDERA DERECHA (Equipo 2) ---
+                if isinstance(eq2, equipo):
+                    ruta_der = os.path.join("banderas", eq2.pais.upper() + ".png")
+                    if os.path.exists(ruta_der):
+                        try:
+                            img_d = Image.open(ruta_der).resize((80, 50), Image.Resampling.LANCZOS)
+                            foto_d = ImageTk.PhotoImage(img_d)
+                            self.img_cache_inf4["der"] = foto_d
+                            lbl_bandera_der.config(image=foto_d)
+                        except Exception:
+                            pass
+            else:
                 lbl_res.config(text="Sin partidos programados desde la fecha indicada.", fg="#ffffff")
 
         tk.Button(f_ctrl, text="Buscar Proximo",
