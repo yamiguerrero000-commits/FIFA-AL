@@ -682,7 +682,7 @@ class PantallaResultados:
         # Al hacer clic en una fila de la cola, se activan los campos de goles
         self.tabla_cola.bind("<<TreeviewSelect>>", self.seleccionar_partido)
 
-        # Frame del formulario de marcador (deshabilitado hasta que se seleccione un partido)
+        # Frame del formulario de marcador
         f_marcador = tk.LabelFrame(f_cuerpo,
                                     text="  Ingresar Marcador del Partido Seleccionado  ",
                                     bg="#943976", fg="white",
@@ -696,10 +696,11 @@ class PantallaResultados:
                                 font=("Arial", 12, "bold"))
         self.lbl_vs.pack(pady=8)
 
-        # Frame para los campos de goles
+        # Frame para los campos de goles, penales y tarjetas
         f_goles = tk.Frame(f_marcador, bg="#6f0c50")
         f_goles.pack()
 
+        # Fila 0: Goles
         tk.Label(f_goles, text="Goles Local:", bg="#6f0c50", fg="white").grid(row=0, column=0, padx=10, pady=5)
         self.ent_gl = tk.Entry(f_goles, width=8, state="disabled")
         self.ent_gl.grid(row=0, column=1, padx=10, pady=5)
@@ -708,6 +709,7 @@ class PantallaResultados:
         self.ent_gv = tk.Entry(f_goles, width=8, state="disabled")
         self.ent_gv.grid(row=0, column=3, padx=10, pady=5)
 
+        # Fila 1: Penales
         tk.Label(f_goles, text="Penales Local:", bg="#6f0c50", fg="white").grid(row=1, column=0, padx=10, pady=5)
         self.ent_pl = tk.Entry(f_goles, width=8, state="disabled")
         self.ent_pl.grid(row=1, column=1, padx=10, pady=5)
@@ -715,6 +717,24 @@ class PantallaResultados:
         tk.Label(f_goles, text="Penales Visitante:", bg="#6f0c50", fg="white").grid(row=1, column=2, padx=10, pady=5)
         self.ent_pv = tk.Entry(f_goles, width=8, state="disabled")
         self.ent_pv.grid(row=1, column=3, padx=10, pady=5)
+
+        # Fila 2: Tarjetas Amarillas
+        tk.Label(f_goles, text="Amarillas Local:", bg="#6f0c50", fg="white").grid(row=2, column=0, padx=10, pady=5)
+        self.ent_al = tk.Entry(f_goles, width=8, state="disabled")
+        self.ent_al.grid(row=2, column=1, padx=10, pady=5)
+
+        tk.Label(f_goles, text="Amarillas Visitante:", bg="#6f0c50", fg="white").grid(row=2, column=2, padx=10, pady=5)
+        self.ent_av = tk.Entry(f_goles, width=8, state="disabled")
+        self.ent_av.grid(row=2, column=3, padx=10, pady=5)
+
+        # Fila 3: Tarjetas Rojas
+        tk.Label(f_goles, text="Rojas Local:", bg="#6f0c50", fg="white").grid(row=3, column=0, padx=10, pady=5)
+        self.ent_rl = tk.Entry(f_goles, width=8, state="disabled")
+        self.ent_rl.grid(row=3, column=1, padx=10, pady=5)
+
+        tk.Label(f_goles, text="Rojas Visitante:", bg="#6f0c50", fg="white").grid(row=3, column=2, padx=10, pady=5)
+        self.ent_rv = tk.Entry(f_goles, width=8, state="disabled")
+        self.ent_rv.grid(row=3, column=3, padx=10, pady=5)
 
         # Frame para los botones de accion
         f_botones = tk.Frame(f_cuerpo, bg="#5e1e47")
@@ -792,6 +812,10 @@ class PantallaResultados:
             self.ent_gv.config(state="normal")
             self.ent_pl.config(state="normal")
             self.ent_pv.config(state="normal")
+            self.ent_al.config(state="normal")
+            self.ent_av.config(state="normal")
+            self.ent_rl.config(state="normal")
+            self.ent_rv.config(state="normal")
             self.btn_registrar.config(state="normal")
             self.btn_suspender.config(state="normal")
             self.btn_reanudar.config(state="normal")
@@ -806,26 +830,34 @@ class PantallaResultados:
                                    "Debe registrar los resultados en orden. Seleccione el primero de la cola.")
             return
 
-        # Obtenemos los goles ingresados
+        # Obtenemos los goles, penales y tarjetas ingresados
         gl_str = self.ent_gl.get().strip()
         gv_str = self.ent_gv.get().strip()
         pl_str = self.ent_pl.get().strip()
         pv_str = self.ent_pv.get().strip()
+        al_str = self.ent_al.get().strip()
+        av_str = self.ent_av.get().strip()
+        rl_str = self.ent_rl.get().strip()
+        rv_str = self.ent_rv.get().strip()
 
         # Validacion: todos los campos son obligatorios
-        if gl_str == "" or gv_str == "" or pl_str == "" or pv_str == "":
-            messagebox.showerror("Error", "Complete todos los campos de goles y penales.")
+        if gl_str == "" or gv_str == "" or pl_str == "" or pv_str == "" or al_str == "" or av_str == "" or rl_str == "" or rv_str == "":
+            messagebox.showerror("Error", "Complete todos los campos de goles, penales y tarjetas.")
             return
 
         # Validacion: deben ser numeros enteros
-        if not gl_str.isdigit() or not gv_str.isdigit() or not pl_str.isdigit() or not pv_str.isdigit():
-            messagebox.showerror("Error", "Los goles y penales deben ser numeros enteros.")
+        if not gl_str.isdigit() or not gv_str.isdigit() or not pl_str.isdigit() or not pv_str.isdigit() or not al_str.isdigit() or not av_str.isdigit() or not rl_str.isdigit() or not rv_str.isdigit():
+            messagebox.showerror("Error", "Todos los valores ingresados deben ser numeros enteros.")
             return
 
         gl = int(gl_str)
         gv = int(gv_str)
         pl = int(pl_str)
         pv = int(pv_str)
+        al = int(al_str)
+        av = int(av_str)
+        rl = int(rl_str)
+        rv = int(rv_str)
 
         # Llamamos al metodo resultado() de la clase torneo (compañero 1)
         mensaje = torneo_actual.resultado(
@@ -835,9 +867,8 @@ class PantallaResultados:
             gl, gv, pl, pv
         )
 
-        if mensaje == "Datos guardados con exito":
+        if mensaje == "Datos dos guardados con exito" or mensaje == "Datos guardados con exito":
             # Buscamos los objetos equipo para actualizar sus estadisticas
-            # (igual que lo hacia registro_resultado.py del compañero 3)
             eq_local     = torneo_actual.busqueda(self.partido_seleccionado.identificador1)
             eq_visitante = torneo_actual.busqueda(self.partido_seleccionado.identificador2)
 
@@ -866,6 +897,18 @@ class PantallaResultados:
                 eq_local.puntos      += 1
                 eq_visitante.puntos  += 1
 
+            # Actualizamos contadores de tarjetas en los objetos de los equipos
+            eq_local.tarjetas_amarillas += al
+            eq_local.tarjetas_rojas     += rl
+            eq_visitante.tarjetas_amarillas += av
+            eq_visitante.tarjetas_rojas     += rv
+
+            # Verificacion de suspensiones por tarjetas corrigiendo el bug del cero (0)
+            if eq_local.tarjetas_rojas > 0 or (eq_local.tarjetas_amarillas > 0 and eq_local.tarjetas_amarillas % 2 == 0):
+                eq_local.suspendido = True
+            if eq_visitante.tarjetas_rojas > 0 or (eq_visitante.tarjetas_amarillas > 0 and eq_visitante.tarjetas_amarillas % 2 == 0):
+                eq_visitante.suspendido = True
+
             # OPERACION DE COLA: sacamos el partido del frente (dequeue)
             cola_partidos.pop(0)
 
@@ -874,10 +917,20 @@ class PantallaResultados:
             self.ent_gv.delete(0, "end")
             self.ent_pl.delete(0, "end")
             self.ent_pv.delete(0, "end")
+            self.ent_al.delete(0, "end")
+            self.ent_av.delete(0, "end")
+            self.ent_rl.delete(0, "end")
+            self.ent_rv.delete(0, "end")
+            
             self.ent_gl.config(state="disabled")
             self.ent_gv.config(state="disabled")
             self.ent_pl.config(state="disabled")
             self.ent_pv.config(state="disabled")
+            self.ent_al.config(state="disabled")
+            self.ent_av.config(state="disabled")
+            self.ent_rl.config(state="disabled")
+            self.ent_rv.config(state="disabled")
+            
             self.btn_registrar.config(state="disabled")
             self.btn_suspender.config(state="disabled")
             self.btn_reanudar.config(state="disabled")
