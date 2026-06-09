@@ -1345,29 +1345,37 @@ class PantallaInformes:
                         negrita = "bold" if col_i == 9 else "normal"
 
                         if col_i == 1:  # columna País → bandera + texto
+                            # Creamos un contenedor del tamaño exacto de la columna para alinear adentro
+                            f_pais = tk.Frame(f_caja, bg="#994E7A", width=158, height=22)
+                            f_pais.grid_propagate(False) # Evita que el frame se encoja
+                            f_pais.grid(row=pos, column=col_i, sticky="nsew")
+
                             try:
-                                ruta = os.path.join("banderas", eq.pais + ".png")
+                                # Forzamos la búsqueda de la imagen en mayúsculas (.upper())
+                                ruta = os.path.join("banderas", eq.pais.upper() + ".png")
                                 img = Image.open(ruta).resize((25,15), Image.Resampling.LANCZOS)
                                 foto = ImageTk.PhotoImage(img)
                                 self.img_refs[eq.pais] = foto
-                                lbl = tk.Label(f_caja, text=dato,
-                                            image=foto, compound="left",
-                                            bg="#994E7A", fg=color,
-                                            font=("Arial",9,negrita),
-                                            width=ancho)
+                                
+                                # Colocamos la bandera alineada a la izquierda dentro del sub-frame
+                                lbl_bandera = tk.Label(f_pais, image=foto, bg="#994E7A")
+                                lbl_bandera.pack(side="left", padx=(15, 5))
+                                
+                                # Colocamos el texto del País al lado de la bandera
+                                lbl_texto = tk.Label(f_pais, text=dato, bg="#994E7A", fg=color,
+                                                     font=("Arial", 9, negrita))
+                                lbl_texto.pack(side="left")
                             except Exception:
-                                lbl = tk.Label(f_caja, text=dato,
-                                            bg="#994E7A", fg=color,
-                                            font=("Arial",9,negrita),
-                                            width=ancho)
-                            lbl.grid(row=pos,column=col_i)
+                                # Si la imagen falla o no existe, solo muestra el texto centrado/alineado
+                                lbl_texto = tk.Label(f_pais, text=dato, bg="#994E7A", fg=color,
+                                                     font=("Arial", 9, negrita))
+                                lbl_texto.pack(expand=True)
                         else:
                             tk.Label(f_caja,text=dato,
                                     bg="#994E7A",fg=color,
                                     font=("Arial",9,negrita),
                                     width=ancho).grid(row=pos,column=col_i)
                     pos += 1
-
 
 # ARRANQUE DE LA APLICACION
 if __name__ == "__main__":
