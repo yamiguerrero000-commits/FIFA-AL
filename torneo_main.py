@@ -1152,7 +1152,6 @@ class PantallaInformes:
         scroll.pack(side="right", fill="y", pady=10)
 
         def ver_historial():
-            
             txt.config(state="normal")
             txt.delete("1.0", "end")
 
@@ -1168,14 +1167,21 @@ class PantallaInformes:
                 txt.insert("end", "=" * 55 + "\n\n")
 
                 hay_partidos = False
+                partidos_perdidos = 0   # inicializamos contador
+
                 for p in torneo_actual.partidos:
                     if (p.identificador1 == eq_obj.identificador or
                             p.identificador2 == eq_obj.identificador):
                         if p.terminado:
                             hay_partidos = True
                             marcador = str(p.goles1) + " - " + str(p.goles2)
-                            
-                            # Línea original corregida: se eliminó la etiqueta de fase [Grupos]
+
+                            # verificamos si el equipo perdió
+                            if p.identificador1 == eq_obj.identificador and p.goles1 < p.goles2:
+                                partidos_perdidos += 1
+                            elif p.identificador2 == eq_obj.identificador and p.goles2 < p.goles1:
+                                partidos_perdidos += 1
+
                             txt.insert("end",
                                         "Fecha: " + p.fecha +
                                         "  |  " + p.identificador1 +
@@ -1185,7 +1191,7 @@ class PantallaInformes:
 
                 if not hay_partidos:
                     txt.insert("end", "Sin partidos jugados registrados.\n")
-                
+
                 txt.insert("end", "\n" + "-" * 55 + "\n")
                 txt.insert("end", f"Tarjetas Amarillas: {eq_obj.tarjetas_amarillas}\n")
                 txt.insert("end", f"Tarjetas Rojas: {eq_obj.tarjetas_rojas}\n")
@@ -1193,22 +1199,26 @@ class PantallaInformes:
                 txt.insert("end", f"Estado del Equipo: {estado}\n")
 
                 txt.insert("end", "\n" + "=" * 55 + "\n")
-                
-                
-                if eq_obj.avance == "Fase" or eq_obj.avance == "Fase de Grupos":
-                    leyenda_etapa = "Disputando la Fase de Grupos"
+
+                avance_texto = eq_obj.avance
+
+                if eq_obj.avance in ["Fase", "Fase de Grupos"]:
+                    if partidos_perdidos > 0:
+                        avance_texto = "Eliminado"
+                        leyenda_etapa = "Eliminado en Fase de Grupos"
+                    else:
+                        leyenda_etapa = "Disputando la Fase de Grupos"
                 elif eq_obj.avance in ["Campeón", "Vicecampeón"]:
                     leyenda_etapa = f"¡Finalista del Torneo Mundial! - Puesto: {eq_obj.avance}"
                 else:
-                    # Se activa cuando asignas al equipo valores como "Dieciseisavos", "Octavos", etc.
                     leyenda_etapa = f"Clasificado a la etapa de {eq_obj.avance} del Mundial"
-                
-                txt.insert("end", "ESTADO DE AVANCE: " + eq_obj.avance + "\n")
+
+                txt.insert("end", "ESTADO DE AVANCE: " + avance_texto + "\n")
                 txt.insert("end", "SITUACIÓN DE ETAPA: " + leyenda_etapa + "\n")
                 txt.insert("end", "=" * 55 + "\n")
 
-            # Deshabilitamos para que no se pueda editar
             txt.config(state="disabled")
+
 
         tk.Button(f_ctrl, text="Ver Historial",
                   bg="#cb3ba9", fg="white",
