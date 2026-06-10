@@ -1,4 +1,4 @@
-from conf_torneo import torneo_actual
+from clases import torneo
 
 #funcion para ingresar resultados de partidos
 def registrar_resultado():
@@ -15,12 +15,12 @@ def registrar_resultado():
     penales2 = int(input("Penales equipo visitante (si aplica, sino 0): "))
 
     #Guardamos el resultado en el torneo
-    mensaje = torneo_actual.resultado(id_local, id_visitante, fecha, gl, gv, penales1, penales2)
+    mensaje = torneo.resultado(id_local, id_visitante, fecha, gl, gv, penales1, penales2)
     print(mensaje)
 
     #Buscamos los equipos para actualizar sus estadisticas
-    equipo_local = torneo_actual.busqueda(id_local)
-    equipo_visitante = torneo_actual.busqueda(id_visitante)
+    equipo_local = torneo.busqueda(id_local)
+    equipo_visitante = torneo.busqueda(id_visitante)
 
     if mensaje == "Datos guardados con exito":
         #Sumamos un partido jugado a cada equipo
@@ -33,30 +33,46 @@ def registrar_resultado():
         equipo_visitante.goles_a += gv
         equipo_visitante.goles_c += gl
 
-        # Determinamos ganador, perdedor o empate para actualizar estadísticas de fase de grupos
+        #Segun el resultado, actualizamos ganados, perdidos, empates y puntos
         if gl > gv:
             equipo_local.ganados += 1
-            equipo_local.puntos += 3
             equipo_visitante.perdidos += 1
+            equipo_local.puntos += 3
         elif gv > gl:
             equipo_visitante.ganados += 1
-            equipo_visitante.puntos += 3
             equipo_local.perdidos += 1
+            equipo_visitante.puntos += 3
         else:
-            # Si es fase de grupos, suma 1 punto a cada uno
             equipo_local.empate += 1
             equipo_visitante.empate += 1
             equipo_local.puntos += 1
             equipo_visitante.puntos += 1
 
-#Mostrar tabla de posiciones de un grupo determinado
-def mostrar_tabla_grupo():
-    grupo = input("\n Ingrese el grupo a mostrar (A-L): ").strip().upper()
-    print(f"\n TABLA DE POSICIONES - GRUPO {grupo} ")
-    tabla = torneo_actual.tabla_posiciones(grupo)
+        amarillas_local = int(input("Tarjetas amarillas equipo local: "))
+        rojas_local = int(input("Tarjetas rojas equipo local: "))
+        amarillas_visitante = int(input("Tarjetas amarillas equipo visitante: "))
+        rojas_visitante = int(input("Tarjetas rojas equipo visitante: "))
+        equipo_local.registrar_tarjeta+=amarillas_local
+        equipo_local.registrar_tarjeta+=rojas_local
+        equipo_visitante.registrar_tarjeta+=amarillas_visitante 
+        equipo_visitante.registrar_tarjeta+=rojas_visitante
+        if equipo_local.tarjetas_rojas>0 or equipo_local.tarjetas_amarillas%2==0:
+            equipo_local.suspendido=True
+        if equipo_visitante.tarjetas_rojas>0 or equipo_visitante.tarjetas_amarillas%2==0:
+            equipo_visitante.suspendido=True
+
+#Mostrar tabla de posiciones en fase de grupos 
+def mostrar_tabla(grupo):
+    print("\n TABLA DE POSICIONES - GRUPO", grupo)
+    #Obtenemos la tabla ordenada del grupo
+    tabla= torneo.tabla_posiciones(grupo)
+    if not tabla:
+        print("No hay equipos en este grupo.")
+        return 
     pos = 1
+    #Recorremos los equipos y mostramos sus estadisticas
     for e in tabla:
-        dif = e.goles_a - e.goles_c
+        dif = e.goles_a - e.goles_c #diferencia de goles
         print(str(pos) + ". " + e.pais + " - Pts:" + str(e.puntos) +
               " GF:" + str(e.goles_a) + " GC:" + str(e.goles_c) + 
               " Dif:" + str(dif))
@@ -66,28 +82,37 @@ def mostrar_tabla_grupo():
 def mostrar_mejores_terceros():
     print("\n MEJORES TERCEROS CLASIFICADOS ")
     #Obtenemos la lista de mejores terceros
-    terceros = torneo_actual.clasificar_mejores_terceros()
+    terceros = torneo.clasificar_mejores_terceros()
     pos = 1
     for e in terceros:
         dif = e.goles_a - e.goles_c
         print(str(pos) + ". " + e.pais + " - Pts:" + str(e.puntos) + 
-              " GF:" + str(e.goles_a) + " GC:" + str(e.goles_c) +
+              " GF:" + str(e.goles_a) + "GC:" + str(e.goles_c) +
               " Dif:" + str(dif))
         pos += 1
 
 #Avance de equipos en fase de eliminacion directa 
 def avanzar_eliminacion_directa():
     print("\n FASE DE ELIMINACION DIRECTA ")
-    
-    mensaje_fase = torneo_actual.avanzar_fase_eliminatoria()
-    print(mensaje_fase)
+    clasificados = []
+    grupos = []
 
-    print("\n PARTIDOS PROGRAMADOS PARA DIECISEISAVOS DE FINAL:")
-    # Listamos los partidos que acaban de crearse en el árbol de playoffs
-    cont = 1
-    for p in torneo_actual.partidos:
-        if p.fase == "Dieciseisavos":
-            eq_l = torneo_actual.busqueda(p.identificador1)
-            eq_v = torneo_actual.busqueda(p.identificador2)
-            print(f"Llave {cont}: {eq_l.pais} ({eq_l.identificador}) vs {eq_v.pais} ({eq_v.identificador}) - Estado: {p.estado}")
-            cont += 1
+    #Armamos lista de grupos sin repetir
+    for e in torneo.equipos:
+        if e.grupo not in grupos:
+            grupos.append(e.grupo)
+
+    #Tomamos los dos primeros de cada grupo y los agregamos a clasificados
+    for g in grupos:
+        tabla = torneo.tabla_posiciones(g)
+        if len(tabla) >= 2:
+            clasificados.extend(tabla[:2]) #usamos extend para agregar varios equipos
+
+    #Agregamos tambien los mejores terceros
+    clasificados.extend(torneo.clasificar_mejores_terceros())
+
+    #Mostramos todos los equipos que pasan a octavos
+    print("Equipos clasificados a octavos de final:")
+    for e in clasificados:
+        print("- " + e.pais + " (Grupo " + e.grupo + ", Pts:" + str(e.puntos) + ")")
+            

@@ -36,10 +36,10 @@ def pedir_prefijo():
 
 def pedir_grupo():
     while True:
-        grupo = input("Grupo (A-L): ").upper().strip()
-        if grupo in ["A","B","C","D","E","F","G","H","I","J","K","L"]:
+        grupo = input("Grupo (A-F): ").upper().strip()
+        if grupo in ["A","B","C","D","E","F"]:
             return grupo
-        print("Error: el grupo debe estar entre A-L.")
+        print("Error: el grupo debe estar entre A-F.")
 
 def pedir_confederacion():
     while True:

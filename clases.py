@@ -3,7 +3,7 @@ class equipo:
         self.identificador=identificador
         self.pais=pais
         self.abreviatura=abreviatura
-        self.prefijo=int(prefijo) # prefijo telefonico 
+        self.prefijo=prefijo #prefijo telefonico
         self.confederacion=confederacion
         self.grupo=grupo
         self.total_p=0 #partidos jugados
@@ -13,7 +13,7 @@ class equipo:
         self.goles_c=0 #goles en contra
         self.goles_a=0 #goles a favor
         self.puntos=0 #total de puntos
-        self.avance="Fase de Grupos" #lugar del equipo 
+        self.avance="Fase" #lugar del equipo
 
         # Fabri modificacion, atributos disciplina
         self.tarjetas_amarillas = 0
@@ -36,7 +36,7 @@ class equipo:
 
 
 class partido:
-    def __init__(self, fecha, hora, lugar, id1,id2, fase="Grupos"):
+    def __init__(self, fecha, hora, lugar, id1,id2):
         self.fecha=fecha
         self.hora=hora
         self.lugar=lugar
@@ -47,7 +47,6 @@ class partido:
         self.penales1=0 #penales del primer equipo
         self.penales2=0 #penales del segundo equipo
         self.terminado=False
-        self.fase=fase # "Grupos", "Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final" 
 
         # Fabri modificacion, estado del partido
         self.estado = "programado"
@@ -95,37 +94,8 @@ class torneo:
                 X.penales2=penales2 #penales del equipo visitante
                 X.terminado=True #cambio automatico de registro de la clase partido
                 X.estado="jugado" # Fabri modificacion, actualizar estado
-                
-                # Control automatico del avance para partidos que correspondan a la fase de eliminacion directa
-                if X.fase != "Grupos":
-                    eq_l = self.busqueda(local)
-                    eq_v = self.busqueda(visitante)
-                    
-                    if gl > gv:
-                        ganador, perdedor = eq_l, eq_v
-                    elif gv > gl:
-                        ganador, perdedor = eq_v, eq_l
-                    else:
-                        # En caso de empate en goles, se define mediante la tanda de penales cargada
-                        if penales1 >= penales2:
-                            ganador, perdedor = eq_l, eq_v
-                        else:
-                            ganador, perdedor = eq_v, eq_l
-                    
-                    
-                    fases = ["Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final", "Campeón"]
-                    if X.fase in fases:
-                        idx = fases.index(X.fase)
-                        if idx < len(fases) - 1:  # evita salir del rango
-                            ganador.avance = fases[idx + 1]
-                            if ganador.avance == "Campeón":
-                                perdedor.avance = "Vicecampeón"
-                            else:
-                                ganador.avance = "Campeón"
-                                perdedor.avance = "Vicecampeón"
-
-                    return "Datos guardados con exito"
-                return "Partido no encontrado o ya jugado"
+                return "Datos guardados con exito"
+        return "Partido no encontrado o ya jugado"
 
     def configuracion(self):
         self.datos=True #cierre de carga de datos
@@ -144,24 +114,7 @@ class torneo:
             for j in range(n - i - 1):
                 e1 = equipos_grupo[j]
                 e2 = equipos_grupo[j + 1]
-                
-                dg1 = e1.goles_a - e1.goles_c
-                dg2 = e2.goles_a - e2.goles_c
-                
-                intercambiar = False
-                if e1.puntos < e2.puntos:
-                    intercambiar = True
-                elif e1.puntos == e2.puntos:
-                    if dg1 < dg2:
-                        intercambiar = True
-                    elif dg1 == dg2:
-                        if e1.goles_a < e2.goles_a:
-                            intercambiar = True
-                        elif e1.goles_a == e2.goles_a:
-                            if e1.prefijo < e2.prefijo: 
-                                intercambiar = True
-                                
-                if intercambiar:
+                if (e1.puntos < e2.puntos or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) < (e2.goles_a - e2.goles_c)) or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) == (e2.goles_a - e2.goles_c) and e1.goles_a < e2.goles_a) or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) == (e2.goles_a - e2.goles_c) and e1.goles_a == e2.goles_a and e1.prefijo < e2.prefijo)):
                     equipos_grupo[j], equipos_grupo[j + 1] = equipos_grupo[j + 1], equipos_grupo[j]
         return equipos_grupo
 
@@ -181,77 +134,6 @@ class torneo:
             for j in range(n - i - 1):
                 e1 = terceros[j]
                 e2 = terceros[j + 1]
-                
-                dg1 = e1.goles_a - e1.goles_c
-                dg2 = e2.goles_a - e2.goles_c
-                
-                intercambiar = False
-                if e1.puntos < e2.puntos:
-                    intercambiar = True
-                elif e1.puntos == e2.puntos:
-                    if dg1 < dg2:
-                        intercambiar = True
-                    elif dg1 == dg2:
-                        if e1.goles_a < e2.goles_a:
-                            intercambiar = True
-                        elif e1.goles_a == e2.goles_a:
-                            if e1.prefijo < e2.prefijo:
-                                intercambiar = True
-                                
-                if intercambiar:
+                if (e1.puntos < e2.puntos or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) < (e2.goles_a - e2.goles_c)) or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) == (e2.goles_a - e2.goles_c) and e1.goles_a < e2.goles_a) or (e1.puntos == e2.puntos and (e1.goles_a - e1.goles_c) == (e2.goles_a - e2.goles_c) and e1.goles_a == e2.goles_a and e1.prefijo < e2.prefijo)):
                     terceros[j], terceros[j + 1] = terceros[j + 1], terceros[j]
-        return terceros 
-
-    def avanzar_fase_eliminatoria(self):
-        """
-        Agrupa los 2 primeros de cada grupo, calcula los 8 mejores terceros,
-        y arma de forma directa las llaves de Dieciseisavos dentro de self.partidos.
-        """
-        clasificados = []
-        grupos = []
-
-        
-        for e in self.equipos:
-            if e.grupo not in grupos:
-                grupos.append(e.grupo)
-
-        
-        for g in grupos:
-            tabla = self.tabla_posiciones(g)
-            if len(tabla) >= 1:
-                clasificados.append(tabla[0])
-            if len(tabla) >= 2:
-                clasificados.append(tabla[1])
-
-        
-        terceros_ordenados = self.clasificar_mejores_terceros()
-        mejores_terceros = terceros_ordenados[:8]
-        clasificados.extend(mejores_terceros) 
-
-
-        for e in self.equipos:
-            if e not in clasificados:
-                e.avance = "Fase de Grupos"
-
-        
-        total = len(clasificados)
-        for i in range(total // 2):
-            local = clasificados[i]
-            visitante = clasificados[total - 1 - i]
-
-            # Seteamos el estatus inicial en play-offs
-            local.avance = "Dieciseisavos"
-            visitante.avance = "Dieciseisavos"
-
-            # Creamos el objeto partido registrando que pertenece a la fase "Dieciseisavos"
-            nuevo_p = partido(
-                fecha="2026-06-28", 
-                hora="16:00", 
-                lugar="Estadio Copa Mundial", 
-                id1=local.identificador, 
-                id2=visitante.identificador,
-                fase="Dieciseisavos"
-            )
-            self.partidos.append(nuevo_p)
-            
-        return f"¡Fase Eliminatoria Generada! {total} equipos clasificados a Dieciseisavos de Final."
+        return terceros # del equipo buscado

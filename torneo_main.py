@@ -1,10 +1,9 @@
 import tkinter as tk                  # libreria para crear ventanas y botones
 from tkinter import messagebox        # para mostrar carteles emergentes de alerta
-from tkinter import ttk               # para tablas 
-import os                             # existencia de archivo
-import time                           # hora actual
-from PIL import Image, ImageTk       # fondo
-import os
+from tkinter import ttk               # para tablas avanzadas (Treeview)
+import os                             # para verificar si existe un archivo
+import time                           # para obtener la hora actual
+from PIL import Image, ImageTk       # para manejar imagenes y usarlas como fondo
 from conf_torneo import torneo_actual
 from clases import equipo, partido
 
@@ -13,7 +12,7 @@ def guardar_datos():
     # Abrimos el archivo en modo escritura. Si no existe, lo crea automaticamente
     archivo = open("datos_torneo.txt", "w", encoding="utf-8")
 
-    # Primera linea: guardamos si la configuracion esta cerrada 
+    # Primera linea: guardamos si la configuracion esta cerrada (True o False)
     archivo.write(str(torneo_actual.datos) + "\n")
 
     # Guardamos cada equipo en una linea con sus atributos separados por comas
@@ -22,7 +21,7 @@ def guardar_datos():
                  str(eq.identificador) + "," +
                  str(eq.pais) + "," +
                  str(eq.abreviatura) + "," +
-                 str(f"+{eq.prefijo}") + "," +
+                 str(eq.prefijo) + "," +
                  str(eq.confederacion) + "," +
                  str(eq.grupo) + "," +
                  str(eq.total_p) + "," +
@@ -166,7 +165,7 @@ class Aplicacion:
         self.contenedor = tk.Frame(self.raiz, bg="#1a1a2e")
         self.contenedor.pack(fill="both", expand=True)
 
-        
+        # Cargar imagen de fondo de forma segura
         try:
             self.imagen_original = Image.open("fondo.png") 
             self.foto_fondo = None
@@ -175,10 +174,10 @@ class Aplicacion:
             self.imagen_original = None
             self.foto_fondo = None
 
-        
+        # Vinculamos el contenedor al evento de cambio de tamaño dinámico
         self.contenedor.bind("<Configure>", self.redimensionar_fondo)
 
-        
+        # Cuando el usuario cierra con la X, guardamos datos primero
         self.raiz.protocol("WM_DELETE_WINDOW", self.salir_aplicacion)
 
         # Mostramos el menu principal al iniciar
@@ -203,20 +202,20 @@ class Aplicacion:
                 break
 
     def crear_encabezado(self, frame_destino):
-        f_header = tk.Frame(frame_destino, bg="#de8ebf", pady=8)
+        f_header = tk.Frame(frame_destino, bg="#d80988", pady=8)
         f_header.pack(fill="x", side="top")
 
         tk.Label(f_header,
                  text="Algoritmos y Estructuras de Datos II  –  Facultad Politecnica  –  UNA",
-                 bg="#de8ebf", fg="#16213e",
+                 bg="#d80988", fg="#16213e",
                  font=("Arial", 10, "bold")).pack()
 
         tk.Label(f_header,
                  text="⚽  Sistema de Gestion  –  Copa Mundial FIFA 2026",
-                 bg="#de8ebf", fg="white",
+                 bg="#d80988", fg="white",
                  font=("Arial", 14, "bold")).pack(pady=2)
 
-        lbl_reloj = tk.Label(f_header, text="", bg="#de8ebf", fg="#222222",
+        lbl_reloj = tk.Label(f_header, text="", bg="#d80988", fg="#222222",
                              font=("Arial", 10))
         lbl_reloj.pack()
 
@@ -239,17 +238,17 @@ class Aplicacion:
         self.limpiar_contenedor()
         historial_pantallas.append("MENU")
         self.crear_encabezado(self.contenedor)
-        panel = tk.Frame(self.contenedor, bg="#ec7bc0", padx=60, pady=30)
+        panel = tk.Frame(self.contenedor, bg="#d80988", padx=60, pady=30)
         panel.pack(pady=50)
         tk.Label(panel, text="MENU PRINCIPAL",
-                 bg="#ec7bc0", fg="white",
+                 bg="#d80988", fg="white",
                  font=("Arial", 18, "bold")).pack(pady=20)
 
         # Boton 1
         btn1 = tk.Button(panel,
                          text="1.  Configuracion del Torneo",
                          width=38, height=2,
-                         bg="#b3428d", fg="white",
+                         bg="#600f45", fg="white",
                          font=("Arial", 11, "bold"),
                          activebackground="#e94560",
                          command=self.abrir_configuracion)
@@ -259,7 +258,7 @@ class Aplicacion:
         btn2 = tk.Button(panel,
                          text="2.  Registro de Resultados",
                          width=38, height=2,
-                         bg="#b3428d", fg="white",
+                         bg="#600f45", fg="white",
                          font=("Arial", 11, "bold"),
                          activebackground="#e94560",
                          command=self.abrir_resultados)
@@ -269,7 +268,7 @@ class Aplicacion:
         btn3 = tk.Button(panel,
                          text="3.  Emision de Informes",
                          width=38, height=2,
-                         bg="#b3428d", fg="white",
+                         bg="#600f45", fg="white",
                          font=("Arial", 11, "bold"),
                          activebackground="#e94560",
                          command=self.abrir_informes)
@@ -283,7 +282,7 @@ class Aplicacion:
         btn4 = tk.Button(panel,
                          text="4.  Salir",
                          width=38, height=2,
-                         bg="#b3428d", fg="white",
+                         bg="#600f45", fg="white",
                          font=("Arial", 11, "bold"),
                          activebackground="#e94560",
                          command=self.salir_aplicacion)
@@ -329,7 +328,7 @@ class PantallaConfiguracion:
         self.contenedor = contenedor
         self.app = app
 
-
+        # Apilamos esta pantalla en el historial (push)
         historial_pantallas.append("CONFIGURACION")
 
         self.app.crear_encabezado(self.contenedor)
@@ -338,13 +337,14 @@ class PantallaConfiguracion:
         f_cuerpo = tk.Frame(self.contenedor, bg="#ea008f")
         f_cuerpo.pack(fill="both", expand=True)
 
-
+        # 2. El Canvas ahora se expande al 100% cubriendo todo el fondo
         self.canvas = tk.Canvas(f_cuerpo, bg="#ea008f", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
         try:
             self.imagen_original = Image.open("fondo2.png")
             self.foto_fondo = None
+            # Evento de redimensión asignado directamente al Canvas
             self.canvas.bind("<Configure>", self.redimensionar_fondo_canvas)
         except Exception as e:
             print(f"⚠️ Alerta: No se pudo cargar la imagen: {e}")
@@ -374,6 +374,7 @@ class PantallaConfiguracion:
 
         self.f_componentes = tk.Frame(self.canvas, bg="#d3459c", width=935, height=540)
         
+        # En lugar de usar place o pack, metemos el frame "DENTRO" del flujo del Canvas
         self.canvas_window = self.canvas.create_window(0, 0, anchor="nw", window=self.f_componentes)
 
         f_equipo = tk.LabelFrame(self.f_componentes,
@@ -394,7 +395,7 @@ class PantallaConfiguracion:
         self.ent_abrev = tk.Entry(f_equipo, width=12, bg="white", fg="black", insertbackground="black", bd=1)
         self.ent_abrev.grid(row=1, column=1, padx=8, pady=8, sticky="w")
 
-        tk.Label(f_equipo, text="Prefijo Tel:+", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=1, column=2, padx=8, pady=8, sticky="w")
+        tk.Label(f_equipo, text="Prefijo Tel:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=1, column=2, padx=8, pady=8, sticky="w")
         self.ent_pref = tk.Entry(f_equipo, width=18, bg="white", fg="black", insertbackground="black", bd=1)
         self.ent_pref.grid(row=1, column=3, padx=8, pady=8, sticky="w")
 
@@ -504,7 +505,7 @@ class PantallaConfiguracion:
         if not self.imagen_original or not self.canvas.winfo_exists():
             return
 
-        
+        # Obtenemos el ancho y alto en tiempo real de la ventana de la App
         ancho = self.canvas.winfo_width()
         alto = self.canvas.winfo_height()
 
@@ -515,7 +516,7 @@ class PantallaConfiguracion:
         imagen_rediseñada = self.imagen_original.resize((ancho, alto), Image.Resampling.LANCZOS)
         self.foto_fondo = ImageTk.PhotoImage(imagen_rediseñada)
         
-        
+        # Limpiamos y dibujamos el fondo
         self.canvas.delete("all")
         self.canvas.create_image(0, 0, anchor="nw", image=self.foto_fondo)
 
@@ -652,7 +653,7 @@ class PantallaResultados:
         self.contenedor = contenedor
         self.app = app
 
-        # Apilamos esta pantalla en el historial 
+        # Apilamos esta pantalla en el historial (push)
         historial_pantallas.append("RESULTADOS")
 
         self.app.crear_encabezado(self.contenedor)
@@ -858,7 +859,7 @@ class PantallaResultados:
         rl = int(rl_str)
         rv = int(rv_str)
 
-        
+        # Llamamos al metodo resultado() de la clase torneo (compañero 1)
         mensaje = torneo_actual.resultado(
             self.partido_seleccionado.identificador1,
             self.partido_seleccionado.identificador2,
@@ -866,7 +867,7 @@ class PantallaResultados:
             gl, gv, pl, pv
         )
 
-        if mensaje == "Datos guardados con exito":
+        if mensaje == "Datos dos guardados con exito" or mensaje == "Datos guardados con exito":
             # Buscamos los objetos equipo para actualizar sus estadisticas
             eq_local     = torneo_actual.busqueda(self.partido_seleccionado.identificador1)
             eq_visitante = torneo_actual.busqueda(self.partido_seleccionado.identificador2)
@@ -902,7 +903,7 @@ class PantallaResultados:
             eq_visitante.tarjetas_amarillas += av
             eq_visitante.tarjetas_rojas     += rv
 
-
+            # Verificacion de suspensiones por tarjetas corrigiendo el bug del cero (0)
             if eq_local.tarjetas_rojas > 0 or (eq_local.tarjetas_amarillas > 0 and eq_local.tarjetas_amarillas % 2 == 0):
                 eq_local.suspendido = True
             if eq_visitante.tarjetas_rojas > 0 or (eq_visitante.tarjetas_amarillas > 0 and eq_visitante.tarjetas_amarillas % 2 == 0):
@@ -938,7 +939,6 @@ class PantallaResultados:
 
             self.actualizar_tabla_cola()
             messagebox.showinfo("Exito", "Resultado registrado y partido removido de la cola.")
-            guardar_datos()  # guardamos cambios en el torneo
         else:
             messagebox.showerror("Error", mensaje)
 
@@ -947,26 +947,22 @@ class PantallaResultados:
             self.partido_seleccionado.suspender()   # metodo de la clase partido
             self.actualizar_tabla_cola()
             messagebox.showinfo("Estado", "Partido marcado como SUSPENDIDO.")
-            guardar_datos()  # guardamos cambios en el torneo
 
     def reanudar_partido(self):
         if self.partido_seleccionado:
             self.partido_seleccionado.reanudar()    # metodo de la clase partido
             self.actualizar_tabla_cola()
             messagebox.showinfo("Estado", "Partido marcado como REPROGRAMADO.")
-            guardar_datos()  # guardamos cambios en el torneo
 
 
-# PANTALLA 3: EMISION DE INFORMES 
-
-#Informe 1
+# PANTALLA 3: EMISION DE INFORMES (5 informes)
 
 class PantallaInformes:
     def __init__(self, contenedor, app):
         self.contenedor = contenedor
         self.app = app
 
-        
+        # Apilamos solo si no estamos ya en INFORMES
         if len(historial_pantallas) == 0 or historial_pantallas[len(historial_pantallas) - 1] != "INFORMES":
             historial_pantallas.append("INFORMES")
 
@@ -1005,7 +1001,7 @@ class PantallaInformes:
         self.f_zona = tk.Frame(self.contenedor, bg="#681345")
         self.f_zona.pack(fill="both", expand=True, padx=10, pady=10)
 
-        
+        # Mostramos el informe 1 por defecto
         self.mostrar_informe1()
 
     def limpiar_zona(self):
@@ -1098,7 +1094,7 @@ class PantallaInformes:
         def consultar():
             for item in tabla.get_children():
                 tabla.delete(item)
-            
+            # Llamamos al metodo tabla_posiciones del compañero 1 (usa bubble sort)
             lista = torneo_actual.tabla_posiciones(var_g.get())
             pos = 1
             for eq in lista:
@@ -1114,8 +1110,7 @@ class PantallaInformes:
                   command=consultar).pack(side="left", padx=8)
         consultar()   # cargamos el grupo A por defecto al abrir
 
-# INFORME 3: historial de partidos de un equipo 
-
+    # INFORME 3: historial de partidos de un equipo
     def mostrar_informe3(self):
         self.limpiar_zona()
 
@@ -1144,7 +1139,7 @@ class PantallaInformes:
         tk.OptionMenu(f_ctrl, var_e, *lista_paises).pack(side="left", padx=5)
 
         # Caja de texto para mostrar el historial
-        txt = tk.Text(self.f_zona, bg="#964272", fg="white",
+        txt = tk.Text(self.f_zona, bg="#681345", fg="white",
                        font=("Courier", 10), state="disabled")
         scroll = tk.Scrollbar(self.f_zona, orient="vertical", command=txt.yview)
         txt.configure(yscrollcommand=scroll.set)
@@ -1152,7 +1147,7 @@ class PantallaInformes:
         scroll.pack(side="right", fill="y", pady=10)
 
         def ver_historial():
-            
+            # Habilitamos para escribir, borramos el contenido anterior
             txt.config(state="normal")
             txt.delete("1.0", "end")
 
@@ -1174,8 +1169,6 @@ class PantallaInformes:
                         if p.terminado:
                             hay_partidos = True
                             marcador = str(p.goles1) + " - " + str(p.goles2)
-                            
-                            # Línea original corregida: se eliminó la etiqueta de fase [Grupos]
                             txt.insert("end",
                                         "Fecha: " + p.fecha +
                                         "  |  " + p.identificador1 +
@@ -1185,27 +1178,9 @@ class PantallaInformes:
 
                 if not hay_partidos:
                     txt.insert("end", "Sin partidos jugados registrados.\n")
-                
-                txt.insert("end", "\n" + "-" * 55 + "\n")
-                txt.insert("end", f"Tarjetas Amarillas: {eq_obj.tarjetas_amarillas}\n")
-                txt.insert("end", f"Tarjetas Rojas: {eq_obj.tarjetas_rojas}\n")
-                estado = "Suspendido" if eq_obj.suspendido else "Activo"
-                txt.insert("end", f"Estado del Equipo: {estado}\n")
 
                 txt.insert("end", "\n" + "=" * 55 + "\n")
-                
-                
-                if eq_obj.avance == "Fase" or eq_obj.avance == "Fase de Grupos":
-                    leyenda_etapa = "Disputando la Fase de Grupos"
-                elif eq_obj.avance in ["Campeón", "Vicecampeón"]:
-                    leyenda_etapa = f"¡Finalista del Torneo Mundial! - Puesto: {eq_obj.avance}"
-                else:
-                    # Se activa cuando asignas al equipo valores como "Dieciseisavos", "Octavos", etc.
-                    leyenda_etapa = f"Clasificado a la etapa de {eq_obj.avance} del Mundial"
-                
                 txt.insert("end", "ESTADO DE AVANCE: " + eq_obj.avance + "\n")
-                txt.insert("end", "SITUACIÓN DE ETAPA: " + leyenda_etapa + "\n")
-                txt.insert("end", "=" * 55 + "\n")
 
             # Deshabilitamos para que no se pueda editar
             txt.config(state="disabled")
@@ -1215,8 +1190,7 @@ class PantallaInformes:
                   command=ver_historial).pack(side="left", padx=8)
         ver_historial()   # cargamos el primer equipo por defecto
 
-# INFORME 4: proximo partido de un equipo desde una fecha 
-
+# INFORME 4: proximo partido de un equipo desde una fecha
     def mostrar_informe4(self):
         self.limpiar_zona()
 
@@ -1248,29 +1222,21 @@ class PantallaInformes:
         ent_fecha.insert(0, "2026-06-11")   # fecha de inicio del mundial como default
         ent_fecha.grid(row=0, column=3, padx=5)
 
-        
-        f_resultado = tk.Frame(self.f_zona, bg="#A43C79", relief="solid", bd=1)
-        f_resultado.pack(fill="x", pady=20, padx=10)
-
-        
-        lbl_bandera_izq = tk.Label(f_resultado, bg="#A43C79")
-        lbl_bandera_izq.pack(side="left", padx=30)
-
-        lbl_res = tk.Label(f_resultado, text="", bg="#A43C79", fg="white",
-                           font=("Arial", 11), justify="left", padx=10, pady=20)
-        lbl_res.pack(side="left", expand=True, fill="both")
-
-        lbl_bandera_der = tk.Label(f_resultado, bg="#A43C79")
-        lbl_bandera_der.pack(side="right", padx=30)
-
-        
-        self.img_cache_inf4 = {}
+        # Label grande para mostrar el resultado
+        lbl_res = tk.Label(self.f_zona,
+                            text="",
+                            bg="#A43C79", fg="white",
+                            font=("Arial", 11),
+                            relief="solid", bd=1,
+                            padx=20, pady=20,
+                            justify="left")
+        lbl_res.pack(fill="x", pady=20, padx=10)
 
         def buscar_proximo():
             nombre  = var_e.get()
             fecha_b = ent_fecha.get().strip()
 
-            
+            # Buscamos el objeto equipo por pais
             eq_obj = None
             for eq in torneo_actual.equipos:
                 if eq.pais == nombre:
@@ -1279,7 +1245,7 @@ class PantallaInformes:
             if not eq_obj:
                 return
 
-            
+            # Buscamos el partido mas cercano a la fecha ingresada que no este terminado
             proximo = None
             for p in torneo_actual.partidos:
                 es_del_equipo = (p.identificador1 == eq_obj.identificador or
@@ -1287,52 +1253,18 @@ class PantallaInformes:
                 es_futuro     = (not p.terminado and p.fecha >= fecha_b)
 
                 if es_del_equipo and es_futuro:
-                    
                     if proximo is None or p.fecha < proximo.fecha:
                         proximo = p
 
-            
-            lbl_bandera_izq.config(image="")
-            lbl_bandera_der.config(image="")
-            self.img_cache_inf4.clear()
-
             if proximo:
-                # Construye el reporte estricto
                 texto = ("PROXIMO PARTIDO ENCONTRADO\n\n" +
                          "Fecha:  " + proximo.fecha + "    Hora: " + proximo.hora + "\n" +
                          "Lugar:  " + proximo.lugar + "\n" +
                          "Partido: " + proximo.identificador1 + "  vs  " + proximo.identificador2 + "\n" +
                          "Estado: " + proximo.estado.upper())
                 lbl_res.config(text=texto, fg="#ffffff")
-
-                # Buscamos los objetos de ambos equipos usando sus identificadores para conocer sus nombres de país
-                eq1 = torneo_actual.busqueda(proximo.identificador1)
-                eq2 = torneo_actual.busqueda(proximo.identificador2)
-
-                
-                if isinstance(eq1, equipo):
-                    ruta_izq = os.path.join("banderas", eq1.pais.upper() + ".png")
-                    if os.path.exists(ruta_izq):
-                        try:
-                            img_i = Image.open(ruta_izq).resize((80, 50), Image.Resampling.LANCZOS)
-                            foto_i = ImageTk.PhotoImage(img_i)
-                            self.img_cache_inf4["izq"] = foto_i
-                            lbl_bandera_izq.config(image=foto_i)
-                        except Exception:
-                            pass
-
-                
-                if isinstance(eq2, equipo):
-                    ruta_der = os.path.join("banderas", eq2.pais.upper() + ".png")
-                    if os.path.exists(ruta_der):
-                        try:
-                            img_d = Image.open(ruta_der).resize((80, 50), Image.Resampling.LANCZOS)
-                            foto_d = ImageTk.PhotoImage(img_d)
-                            self.img_cache_inf4["der"] = foto_d
-                            lbl_bandera_der.config(image=foto_d)
-                        except Exception:
-                            pass
             else:
+
                 lbl_res.config(text="Sin partidos programados desde la fecha indicada.", fg="#ffffff")
 
         tk.Button(f_ctrl, text="Buscar Proximo",
@@ -1342,24 +1274,27 @@ class PantallaInformes:
         buscar_proximo()   # Carga el resultado por defecto al iniciar la pantalla
 
     # INFORME 5: clasificacion general de todos los grupos
-
     def mostrar_informe5(self):
         self.limpiar_zona()
 
         tk.Label(self.f_zona,
-                text="INFORME 5 – CLASIFICACION GENERAL (todos los grupos)",
-                bg="#7D1351", fg="#ffffff",
-                font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
+                 text="INFORME 5 – CLASIFICACION GENERAL (todos los grupos)",
+                 bg="#7D1351", fg="#ffffff",
+                 font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
 
+        # Canvas con scrollbar para poder desplazarse entre los 12 grupos
         f_scroll = tk.Frame(self.f_zona, bg="#681345")
         f_scroll.pack(fill="both", expand=True)
 
         canvas = tk.Canvas(f_scroll, bg="#681345", highlightthickness=0)
         scrollbar = tk.Scrollbar(f_scroll, orient="vertical", command=canvas.yview)
 
+        # Frame interno donde se colocan las tablas de cada grupo
         f_interno = tk.Frame(canvas, bg="#AA407E")
+
+        # Cada vez que el frame interno cambie de tamanio, actualizamos el scroll
         f_interno.bind("<Configure>",
-                    lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+                        lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
         canvas.create_window((0, 0), window=f_interno, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
@@ -1367,72 +1302,50 @@ class PantallaInformes:
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
-        grupos = ["A","B","C","D","E","F","G","H","I","J","K","L"]
-
-        
-        self.img_refs = {}
+        # Recorremos los 12 grupos de la A a la L
+        grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 
         for g in grupos:
             lista_grupo = torneo_actual.tabla_posiciones(g)
+
+            # Solo mostramos los grupos que tienen equipos registrados
             if len(lista_grupo) > 0:
+                # Caja con el titulo del grupo
                 f_caja = tk.LabelFrame(f_interno,
-                                    text="  GRUPO " + g + "  ",
-                                    bg="#A44E92", fg="#ffffff",
-                                    font=("Arial", 11, "bold"),
-                                    padx=10, pady=5)
+                                        text="  GRUPO " + g + "  ",
+                                        bg="#FFA9EC", fg="#ffffff",
+                                        font=("Arial", 11, "bold"),
+                                        padx=10, pady=5)
                 f_caja.pack(fill="x", pady=8, padx=5)
 
-                columnas = [("Pos",5),("Pais",22),("PJ",5),("G",5),
-                            ("E",5),("P",5),("GF",5),("GC",5),("DG",6),("Pts",6)]
-                for col_i,(texto,ancho) in enumerate(columnas):
-                    tk.Label(f_caja,text=texto,
-                            bg="#EE7FC0",fg="#ffffff",
-                            font=("Arial",9,"bold"),
-                            width=ancho).grid(row=0,column=col_i)
+                # Encabezado de columnas
+                columnas = [("Pos", 5), ("Pais", 22), ("PJ", 5), ("G", 5),
+                             ("E", 5), ("P", 5), ("GF", 5), ("GC", 5), ("DG", 6), ("Pts", 6)]
+                for col_i, (texto, ancho) in enumerate(columnas):
+                    tk.Label(f_caja,
+                              text=texto,
+                              bg="#EE7FC0", fg="#ffffff",
+                              font=("Arial", 9, "bold"),
+                              width=ancho).grid(row=0, column=col_i)
 
+                # Fila de cada equipo
                 pos = 1
                 for eq in lista_grupo:
                     dg = eq.goles_a - eq.goles_c
                     datos_fila = [str(pos), eq.pais, str(eq.total_p), str(eq.ganados),
-                                str(eq.empate), str(eq.perdidos),
-                                str(eq.goles_a), str(eq.goles_c), str(dg), str(eq.puntos)]
-                    anchos_fila = [5,22,5,5,5,5,5,5,6,6]
+                                   str(eq.empate), str(eq.perdidos),
+                                   str(eq.goles_a), str(eq.goles_c), str(dg), str(eq.puntos)]
+                    anchos_fila = [5, 22, 5, 5, 5, 5, 5, 5, 6, 6]
 
-                    for col_i,(dato,ancho) in enumerate(zip(datos_fila,anchos_fila)):
+                    for col_i, (dato, ancho) in enumerate(zip(datos_fila, anchos_fila)):
+                        # Los puntos van en dorado para destacarlos
                         color = "#ffffff" if col_i == 9 else "white"
                         negrita = "bold" if col_i == 9 else "normal"
-
-                        if col_i == 1:  # columna País → bandera + texto
-                            # Creamos un contenedor del tamaño exacto de la columna para alinear adentro
-                            f_pais = tk.Frame(f_caja, bg="#994E7A", width=158, height=22)
-                            f_pais.grid_propagate(False) # Evita que el frame se encoja
-                            f_pais.grid(row=pos, column=col_i, sticky="nsew")
-
-                            try:
-                                
-                                ruta = os.path.join("banderas", eq.pais.upper() + ".png")
-                                img = Image.open(ruta).resize((25,15), Image.Resampling.LANCZOS)
-                                foto = ImageTk.PhotoImage(img)
-                                self.img_refs[eq.pais] = foto
-                                
-                                # Colocamos la bandera alineada a la izquierda dentro del sub-frame
-                                lbl_bandera = tk.Label(f_pais, image=foto, bg="#994E7A")
-                                lbl_bandera.pack(side="left", padx=(15, 5))
-                                
-                                
-                                lbl_texto = tk.Label(f_pais, text=dato, bg="#994E7A", fg=color,
-                                                     font=("Arial", 9, negrita))
-                                lbl_texto.pack(side="left")
-                            except Exception:
-                                
-                                lbl_texto = tk.Label(f_pais, text=dato, bg="#994E7A", fg=color,
-                                                     font=("Arial", 9, negrita))
-                                lbl_texto.pack(expand=True)
-                        else:
-                            tk.Label(f_caja,text=dato,
-                                    bg="#994E7A",fg=color,
-                                    font=("Arial",9,negrita),
-                                    width=ancho).grid(row=pos,column=col_i)
+                        tk.Label(f_caja,
+                                  text=dato,
+                                  bg="#994E7A", fg=color,
+                                  font=("Arial", 9, negrita),
+                                  width=ancho).grid(row=pos, column=col_i)
                     pos += 1
 
 # ARRANQUE DE LA APLICACION
