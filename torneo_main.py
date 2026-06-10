@@ -646,18 +646,21 @@ class PantallaConfiguracion:
             self.bloquear_formularios()
             messagebox.showinfo("Exito", "Configuracion cerrada. Ya puede registrar resultados e informes.")
 
+import tkinter as tk
+from tkinter import ttk, messagebox
+
 # PANTALLA 2: REGISTRO DE RESULTADOS
 class PantallaResultados:
     def __init__(self, contenedor, app):
         self.contenedor = contenedor
         self.app = app
 
-        # Apilamos esta pantalla en el historial 
+        # Apilamos esta pantalla en el historial (Asumiendo que historial_pantallas es global)
         historial_pantallas.append("RESULTADOS")
 
         self.app.crear_encabezado(self.contenedor)
 
-        # Inicializamos la cola con los partidos pendientes
+        # Inicializamos la cola con los partidos pendientes (Asumiendo función global)
         inicializar_cola_partidos()
 
         f_cuerpo = tk.Frame(self.contenedor, bg="#edcbf6")
@@ -671,8 +674,9 @@ class PantallaResultados:
 
         # Tabla que muestra la cola de partidos
         self.tabla_cola = ttk.Treeview(f_cuerpo,
-                                        columns=("Fecha", "Hora", "Lugar", "Local", "Visitante", "Estado"),
-                                        show="headings", height=5)
+                                       columns=("Fecha", "Hora", "Lugar", "Local", "Visitante", "Estado"),
+                                       show="headings", height=5)
+        
         for col, ancho in [("Fecha", 95), ("Hora", 60), ("Lugar", 160), ("Local", 100), ("Visitante", 100), ("Estado", 110)]:
             self.tabla_cola.heading(col, text=col)
             self.tabla_cola.column(col, width=ancho, anchor="center")
@@ -683,16 +687,16 @@ class PantallaResultados:
 
         # Frame del formulario de marcador
         f_marcador = tk.LabelFrame(f_cuerpo,
-                                    text="  Ingresar Marcador del Partido Seleccionado  ",
-                                    bg="#943976", fg="white",
-                                    font=("Arial", 10, "bold"))
+                                   text="  Ingresar Marcador del Partido Seleccionado  ",
+                                   bg="#943976", fg="white",
+                                   font=("Arial", 10, "bold"))
         f_marcador.pack(fill="x", pady=12, ipady=8)
 
         # Label que muestra que partido esta seleccionado
         self.lbl_vs = tk.Label(f_marcador,
-                                text="Seleccione un partido de la cola de arriba",
-                                bg="#943976", fg="#ffffff",
-                                font=("Arial", 12, "bold"))
+                               text="Seleccione un partido de la cola de arriba",
+                               bg="#943976", fg="#ffffff",
+                               font=("Arial", 12, "bold"))
         self.lbl_vs.pack(pady=8)
 
         # Frame para los campos de goles, penales y tarjetas
@@ -740,25 +744,25 @@ class PantallaResultados:
         f_botones.pack(pady=10)
 
         self.btn_registrar = tk.Button(f_botones,
-                                        text="⚽  Registrar Resultado",
-                                        bg="#9c3978", fg="white",
-                                        font=("Arial", 10, "bold"),
-                                        state="disabled",
-                                        command=self.registrar_marcador)
+                                       text="⚽  Registrar Resultado",
+                                       bg="#9c3978", fg="white",
+                                       font=("Arial", 10, "bold"),
+                                       state="disabled",
+                                       command=self.registrar_marcador)
         self.btn_registrar.grid(row=0, column=0, padx=10)
 
         self.btn_suspender = tk.Button(f_botones,
-                                        text="⛔  Suspender Partido",
-                                        bg="#9c3978", fg="white",
-                                        state="disabled",
-                                        command=self.suspender_partido)
+                                       text="⛔  Suspender Partido",
+                                       bg="#9c3978", fg="white",
+                                       state="disabled",
+                                       command=self.suspender_partido)
         self.btn_suspender.grid(row=0, column=1, padx=10)
 
         self.btn_reanudar = tk.Button(f_botones,
-                                       text="🔄  Reanudar Partido",
-                                       bg="#9c3978", fg="white",
-                                       state="disabled",
-                                       command=self.reanudar_partido)
+                                      text="🔄  Reanudar Partido",
+                                      bg="#9c3978", fg="white",
+                                      state="disabled",
+                                      command=self.reanudar_partido)
         self.btn_reanudar.grid(row=0, column=2, padx=10)
 
         tk.Button(f_cuerpo,
@@ -779,9 +783,9 @@ class PantallaResultados:
         # Insertamos cada partido de la cola
         for p in cola_partidos:
             self.tabla_cola.insert("", "end",
-                                    values=(p.fecha, p.hora, p.lugar,
-                                            p.identificador1, p.identificador2,
-                                            p.estado))
+                                   values=(p.fecha, p.hora, p.lugar,
+                                           p.identificador1, p.identificador2,
+                                           p.estado))
 
     def seleccionar_partido(self, evento):
         # Obtenemos la fila seleccionada en la tabla
@@ -799,25 +803,42 @@ class PantallaResultados:
         self.partido_seleccionado = None
         for p in torneo_actual.partidos:
             if (p.fecha == v_fec and p.hora == v_hor and
-                    p.identificador1 == v_id1 and p.identificador2 == v_id2):
+                p.identificador1 == v_id1 and p.identificador2 == v_id2):
                 self.partido_seleccionado = p
+                break # Rompemos el ciclo una vez encontrado para optimizar
 
         # Si lo encontramos, mostramos su nombre y habilitamos los campos
         if self.partido_seleccionado:
-            self.lbl_vs.config(text=self.partido_seleccionado.identificador1 +
-                                    "  VS  " +
-                                    self.partido_seleccionado.identificador2)
-            self.ent_gl.config(state="normal")
-            self.ent_gv.config(state="normal")
+            self.lbl_vs.config(text=f"{self.partido_seleccionado.identificador1}  VS  {self.partido_seleccionado.identificador2}")
+            
+            # Habilitar campos
+            for entry in [self.ent_gl, self.ent_gv, self.ent_al, self.ent_av, self.ent_rl, self.ent_rv]:
+                entry.config(state="normal")
+            
+            # Habilitar botones
+            for btn in [self.btn_registrar, self.btn_suspender, self.btn_reanudar]:
+                btn.config(state="normal")
+                
+            self.ent_gl.bind("<KeyRelease>", self.verificar_empate)
+            self.ent_gv.bind("<KeyRelease>", self.verificar_empate)
+
+    def verificar_empate(self, evento=None):
+        try:
+            gl = int(self.ent_gl.get())
+            gv = int(self.ent_gv.get())
+        except ValueError:
+            self.ent_pl.config(state="disabled")
+            self.ent_pv.config(state="disabled")
+            return
+
+        if gl == gv:
             self.ent_pl.config(state="normal")
             self.ent_pv.config(state="normal")
-            self.ent_al.config(state="normal")
-            self.ent_av.config(state="normal")
-            self.ent_rl.config(state="normal")
-            self.ent_rv.config(state="normal")
-            self.btn_registrar.config(state="normal")
-            self.btn_suspender.config(state="normal")
-            self.btn_reanudar.config(state="normal")
+        else:
+            self.ent_pl.delete(0, "end")
+            self.ent_pv.delete(0, "end")
+            self.ent_pl.config(state="disabled")
+            self.ent_pv.config(state="disabled")
 
     def registrar_marcador(self):
         if not self.partido_seleccionado:
@@ -829,36 +850,45 @@ class PantallaResultados:
                                    "Debe registrar los resultados en orden. Seleccione el primero de la cola.")
             return
 
-        # Obtenemos los goles, penales y tarjetas ingresados
+        # Obtenemos los goles y tarjetas ingresados
         gl_str = self.ent_gl.get().strip()
         gv_str = self.ent_gv.get().strip()
-        pl_str = self.ent_pl.get().strip()
-        pv_str = self.ent_pv.get().strip()
         al_str = self.ent_al.get().strip()
         av_str = self.ent_av.get().strip()
         rl_str = self.ent_rl.get().strip()
         rv_str = self.ent_rv.get().strip()
 
-        # Validacion: todos los campos son obligatorios
-        if gl_str == "" or gv_str == "" or pl_str == "" or pv_str == "" or al_str == "" or av_str == "" or rl_str == "" or rv_str == "":
-            messagebox.showerror("Error", "Complete todos los campos de goles, penales y tarjetas.")
+        # Validación: goles y tarjetas son obligatorios
+        if not all([gl_str, gv_str, al_str, av_str, rl_str, rv_str]):
+            messagebox.showerror("Error", "Complete todos los campos de goles y tarjetas.")
             return
 
-        # Validacion: deben ser numeros enteros
-        if not gl_str.isdigit() or not gv_str.isdigit() or not pl_str.isdigit() or not pv_str.isdigit() or not al_str.isdigit() or not av_str.isdigit() or not rl_str.isdigit() or not rv_str.isdigit():
-            messagebox.showerror("Error", "Todos los valores ingresados deben ser numeros enteros.")
+        # Validación: deben ser números enteros
+        if not all(val.isdigit() for val in [gl_str, gv_str, al_str, av_str, rl_str, rv_str]):
+            messagebox.showerror("Error", "Todos los valores ingresados deben ser números enteros.")
             return
 
         gl = int(gl_str)
         gv = int(gv_str)
-        pl = int(pl_str)
-        pv = int(pv_str)
-        al = int(al_str)
-        av = int(av_str)
-        rl = int(rl_str)
-        rv = int(rv_str)
 
-        
+        # Penales solo si hay empate
+        if gl == gv:
+            pl_str = self.ent_pl.get().strip()
+            pv_str = self.ent_pv.get().strip()
+            
+            if not pl_str or not pv_str:
+                messagebox.showerror("Error", "Debe ingresar penales en caso de empate.")
+                return
+            if not pl_str.isdigit() or not pv_str.isdigit():
+                messagebox.showerror("Error", "Los penales deben ser números enteros.")
+                return
+            pl = int(pl_str)
+            pv = int(pv_str)
+        else:
+            pl = 0
+            pv = 0
+
+        # Guardamos resultado en el torneo
         mensaje = torneo_actual.resultado(
             self.partido_seleccionado.identificador1,
             self.partido_seleccionado.identificador2,
@@ -866,95 +896,41 @@ class PantallaResultados:
             gl, gv, pl, pv
         )
 
-        if mensaje == "Datos dos guardados con exito" or mensaje == "Datos guardados con exito":
-            # Buscamos los objetos equipo para actualizar sus estadisticas
-            eq_local     = torneo_actual.busqueda(self.partido_seleccionado.identificador1)
-            eq_visitante = torneo_actual.busqueda(self.partido_seleccionado.identificador2)
-
-            # Sumamos partidos jugados a ambos
-            eq_local.total_p     += 1
-            eq_visitante.total_p += 1
-
-            # Actualizamos goles a favor y en contra
-            eq_local.goles_a     += gl
-            eq_local.goles_c     += gv
-            eq_visitante.goles_a += gv
-            eq_visitante.goles_c += gl
-
-            # Segun el resultado actualizamos ganados, perdidos, empates y puntos
-            if gl > gv:
-                eq_local.ganados     += 1
-                eq_visitante.perdidos += 1
-                eq_local.puntos      += 3
-            elif gv > gl:
-                eq_visitante.ganados  += 1
-                eq_local.perdidos    += 1
-                eq_visitante.puntos  += 3
-            else:
-                eq_local.empate      += 1
-                eq_visitante.empate  += 1
-                eq_local.puntos      += 1
-                eq_visitante.puntos  += 1
-
-            # Actualizamos contadores de tarjetas en los objetos de los equipos
-            eq_local.tarjetas_amarillas += al
-            eq_local.tarjetas_rojas     += rl
-            eq_visitante.tarjetas_amarillas += av
-            eq_visitante.tarjetas_rojas     += rv
-
-
-            if eq_local.tarjetas_rojas > 0 or (eq_local.tarjetas_amarillas > 0 and eq_local.tarjetas_amarillas % 2 == 0):
-                eq_local.suspendido = True
-            if eq_visitante.tarjetas_rojas > 0 or (eq_visitante.tarjetas_amarillas > 0 and eq_visitante.tarjetas_amarillas % 2 == 0):
-                eq_visitante.suspendido = True
-
-            # OPERACION DE COLA: sacamos el partido del frente (dequeue)
+        if mensaje in ["Datos dos guardados con exito", "Datos guardados con exito"]:
             cola_partidos.pop(0)
+            
+            # Limpiar campos
+            for entry in [self.ent_gl, self.ent_gv, self.ent_pl, self.ent_pv, 
+                          self.ent_al, self.ent_av, self.ent_rl, self.ent_rv]:
+                entry.delete(0, "end")
+                entry.config(state="disabled")
 
-            # Limpiamos y deshabilitamos los campos
-            self.ent_gl.delete(0, "end")
-            self.ent_gv.delete(0, "end")
-            self.ent_pl.delete(0, "end")
-            self.ent_pv.delete(0, "end")
-            self.ent_al.delete(0, "end")
-            self.ent_av.delete(0, "end")
-            self.ent_rl.delete(0, "end")
-            self.ent_rv.delete(0, "end")
-            
-            self.ent_gl.config(state="disabled")
-            self.ent_gv.config(state="disabled")
-            self.ent_pl.config(state="disabled")
-            self.ent_pv.config(state="disabled")
-            self.ent_al.config(state="disabled")
-            self.ent_av.config(state="disabled")
-            self.ent_rl.config(state="disabled")
-            self.ent_rv.config(state="disabled")
-            
-            self.btn_registrar.config(state="disabled")
-            self.btn_suspender.config(state="disabled")
-            self.btn_reanudar.config(state="disabled")
+            # Deshabilitar botones y resetear label
+            for btn in [self.btn_registrar, self.btn_suspender, self.btn_reanudar]:
+                btn.config(state="disabled")
+                
             self.lbl_vs.config(text="Seleccione un partido de la cola de arriba")
             self.partido_seleccionado = None
 
             self.actualizar_tabla_cola()
             messagebox.showinfo("Exito", "Resultado registrado y partido removido de la cola.")
-            guardar_datos()  # guardamos cambios en el torneo
+            guardar_datos()
         else:
             messagebox.showerror("Error", mensaje)
 
     def suspender_partido(self):
         if self.partido_seleccionado:
-            self.partido_seleccionado.suspender()   # metodo de la clase partido
+            self.partido_seleccionado.suspender()
             self.actualizar_tabla_cola()
             messagebox.showinfo("Estado", "Partido marcado como SUSPENDIDO.")
-            guardar_datos()  # guardamos cambios en el torneo
+            guardar_datos()
 
     def reanudar_partido(self):
         if self.partido_seleccionado:
-            self.partido_seleccionado.reanudar()    # metodo de la clase partido
+            self.partido_seleccionado.reanudar()
             self.actualizar_tabla_cola()
             messagebox.showinfo("Estado", "Partido marcado como REPROGRAMADO.")
-            guardar_datos()  # guardamos cambios en el torneo
+            guardar_datos()
 
 
 # PANTALLA 3: EMISION DE INFORMES 
