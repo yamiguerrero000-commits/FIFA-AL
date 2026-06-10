@@ -79,7 +79,6 @@ def mostrar_mejores_terceros():
 def avanzar_eliminacion_directa():
     print("\n FASE DE ELIMINACION DIRECTA ")
     
-    # Invocamos la función unificada de clases.py que automatiza todo el proceso de corte del PDF
     mensaje_fase = torneo_actual.avanzar_fase_eliminatoria()
     print(mensaje_fase)
 

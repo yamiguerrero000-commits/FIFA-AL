@@ -116,12 +116,17 @@ class torneo:
                     fases = ["Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final", "Campeón"]
                     if X.fase in fases:
                         idx = fases.index(X.fase)
-                        ganador.avance = fases[idx + 1] # El equipo ganador sube a la siguiente ronda
-                        if ganador.avance == "Campeón":
-                            perdedor.avance = "Vicecampeón"
-                            
-                return "Datos guardados con exito"
-        return "Partido no encontrado o ya jugado"
+                        if idx < len(fases) - 1:  # evita salir del rango
+                            ganador.avance = fases[idx + 1]
+                            if ganador.avance == "Campeón":
+                                perdedor.avance = "Vicecampeón"
+                            else:
+                                ganador.avance = "Campeón"
+                                perdedor.avance = "Vicecampeón"
+
+                    return "Datos guardados con exito"
+                return "Partido no encontrado o ya jugado"
+
 
     def configuracion(self):
         self.datos=True #cierre de carga de datos
