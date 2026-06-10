@@ -1114,17 +1114,17 @@ class PantallaInformes:
                   command=consultar).pack(side="left", padx=8)
         consultar()   # cargamos el grupo A por defecto al abrir
 
-# INFORME 3: HISTORIAL DE PARTIDOS DE UN EQUIPO (ACTUALIZADO)
+# INFORME 3: historial de partidos de un equipo 
+
     def mostrar_informe3(self):
         self.limpiar_zona()
 
-        # TÍTULO EN MAYÚSCULAS con color original
         tk.Label(self.f_zona,
                  text="INFORME 3 – HISTORIAL Y AVANCE DE UN EQUIPO",
                  bg="#891D5C", fg="#ffffff",
                  font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
 
-        # Armamos la lista de países para el desplegable
+        # Armamos la lista de paises para el desplegable
         lista_paises = []
         for eq in torneo_actual.equipos:
             lista_paises.append(eq.pais)
@@ -1143,7 +1143,7 @@ class PantallaInformes:
         var_e.set(lista_paises[0])
         tk.OptionMenu(f_ctrl, var_e, *lista_paises).pack(side="left", padx=5)
 
-        # Caja de texto monoespaciada para alinear perfectamente los datos
+        # Caja de texto para mostrar el historial
         txt = tk.Text(self.f_zona, bg="#964272", fg="white",
                        font=("Courier", 10), state="disabled")
         scroll = tk.Scrollbar(self.f_zona, orient="vertical", command=txt.yview)
@@ -1151,7 +1151,8 @@ class PantallaInformes:
         txt.pack(side="left", fill="both", expand=True, pady=10)
         scroll.pack(side="right", fill="y", pady=10)
 
-        def ver_historial(*args):
+        def ver_historial():
+            
             txt.config(state="normal")
             txt.delete("1.0", "end")
 
@@ -1174,17 +1175,12 @@ class PantallaInformes:
                             hay_partidos = True
                             marcador = str(p.goles1) + " - " + str(p.goles2)
                             
-                            # Traducir los identificadores internos a nombres reales de países
-                            el = torneo_actual.busqueda(p.identificador1)
-                            ev = torneo_actual.busqueda(p.identificador2)
-                            nom_local = el.pais if el != "Sin coincidencias" else p.identificador1
-                            nom_vis = ev.pais if ev != "Sin coincidencias" else p.identificador2
-
+                            # Línea original corregida: se eliminó la etiqueta de fase [Grupos]
                             txt.insert("end",
                                         "Fecha: " + p.fecha +
-                                        "  |  " + nom_local +
+                                        "  |  " + p.identificador1 +
                                         "  " + marcador + "  " +
-                                        nom_vis +
+                                        p.identificador2 +
                                         "  |  " + p.lugar + "\n")
 
                 if not hay_partidos:
@@ -1192,36 +1188,32 @@ class PantallaInformes:
                 
                 txt.insert("end", "\n" + "-" * 55 + "\n")
                 txt.insert("end", f"Tarjetas Amarillas: {eq_obj.tarjetas_amarillas}\n")
-                txt.insert("end", f"Tarjetas Rojas:     {eq_obj.tarjetas_rojas}\n")
+                txt.insert("end", f"Tarjetas Rojas: {eq_obj.tarjetas_rojas}\n")
                 estado = "Suspendido" if eq_obj.suspendido else "Activo"
-                txt.insert("end", f"Estado del Equipo:  {estado}\n")
+                txt.insert("end", f"Estado del Equipo: {estado}\n")
 
                 txt.insert("end", "\n" + "=" * 55 + "\n")
+                
                 
                 if eq_obj.avance == "Fase" or eq_obj.avance == "Fase de Grupos":
                     leyenda_etapa = "Disputando la Fase de Grupos"
                 elif eq_obj.avance in ["Campeón", "Vicecampeón"]:
                     leyenda_etapa = f"¡Finalista del Torneo Mundial! - Puesto: {eq_obj.avance}"
                 else:
+                    # Se activa cuando asignas al equipo valores como "Dieciseisavos", "Octavos", etc.
                     leyenda_etapa = f"Clasificado a la etapa de {eq_obj.avance} del Mundial"
                 
-                txt.insert("end", "ESTADO DE AVANCE:  " + eq_obj.avance + "\n")
+                txt.insert("end", "ESTADO DE AVANCE: " + eq_obj.avance + "\n")
                 txt.insert("end", "SITUACIÓN DE ETAPA: " + leyenda_etapa + "\n")
                 txt.insert("end", "=" * 55 + "\n")
 
-            # Deshabilitamos la edición manual para el usuario
+            # Deshabilitamos para que no se pueda editar
             txt.config(state="disabled")
 
-        # Rastro de variable: Al seleccionar un país del OptionMenu, se dispara 'ver_historial' automáticamente
-        var_e.trace_add("write", ver_historial)
-
-        # Botón clásico mantenido por diseño
         tk.Button(f_ctrl, text="Ver Historial",
-                 bg="#cb3ba9", fg="white",
-                 command=ver_historial).pack(side="left", padx=8)
-        
-        # Carga inicial automática al renderizar la pestaña
-        ver_historial()
+                  bg="#cb3ba9", fg="white",
+                  command=ver_historial).pack(side="left", padx=8)
+        ver_historial()   # cargamos el primer equipo por defecto
 
 # INFORME 4: proximo partido de un equipo desde una fecha 
 
