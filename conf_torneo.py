@@ -127,3 +127,4 @@ def configurar_torneo():
 
 if __name__ == "__main__":
     configurar_torneo()
+    
