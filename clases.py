@@ -127,7 +127,6 @@ class torneo:
                     return "Datos guardados con exito"
                 return "Partido no encontrado o ya jugado"
 
-
     def configuracion(self):
         self.datos=True #cierre de carga de datos
 
