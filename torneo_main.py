@@ -22,7 +22,7 @@ def guardar_datos():
                  str(eq.identificador) + "," +
                  str(eq.pais) + "," +
                  str(eq.abreviatura) + "," +
-                 str(eq.prefijo) + "," +
+                 str(f"+{eq.prefijo}") + "," +
                  str(eq.confederacion) + "," +
                  str(eq.grupo) + "," +
                  str(eq.total_p) + "," +
@@ -394,7 +394,7 @@ class PantallaConfiguracion:
         self.ent_abrev = tk.Entry(f_equipo, width=12, bg="white", fg="black", insertbackground="black", bd=1)
         self.ent_abrev.grid(row=1, column=1, padx=8, pady=8, sticky="w")
 
-        tk.Label(f_equipo, text="Prefijo Tel:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=1, column=2, padx=8, pady=8, sticky="w")
+        tk.Label(f_equipo, text="Prefijo Tel:+", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=1, column=2, padx=8, pady=8, sticky="w")
         self.ent_pref = tk.Entry(f_equipo, width=18, bg="white", fg="black", insertbackground="black", bd=1)
         self.ent_pref.grid(row=1, column=3, padx=8, pady=8, sticky="w")
 
