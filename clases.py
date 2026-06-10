@@ -251,3 +251,4 @@ class torneo:
             self.partidos.append(nuevo_p)
             
         return f"¡Fase Eliminatoria Generada! {total} equipos clasificados a Dieciseisavos de Final."
+    
