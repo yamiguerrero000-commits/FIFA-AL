@@ -3,7 +3,7 @@ from tkinter import messagebox        # para mostrar carteles emergentes de aler
 from tkinter import ttk               # para tablas 
 import os                             # existencia de archivo
 import time                           # hora actual
-from PIL import Image, ImageTk       # fondo
+from PIL import Image, ImageTk        # fondo
 import os
 from conf_torneo import torneo_actual
 from clases import equipo, partido
@@ -27,10 +27,10 @@ def guardar_datos():
                  str(eq.grupo) + "," +
                  str(eq.total_p) + "," +
                  str(eq.ganados) + "," +
-                 str(eq.empate) + "," +        # empate (no empatados)
+                 str(eq.empate) + "," +        # empate 
                  str(eq.perdidos) + "," +
-                 str(eq.goles_a) + "," +       # goles_a (no goles_f)
-                 str(eq.goles_c) + "," +
+                 str(eq.goles_a) + "," +       # goles a favor
+                 str(eq.goles_c) + "," +       # goles en contra
                  str(eq.puntos) + "," +
                  str(eq.avance) + "," +
                  str(eq.tarjetas_amarillas) + "," +
@@ -44,8 +44,8 @@ def guardar_datos():
                  str(p.fecha) + "," +
                  str(p.hora) + "," +
                  str(p.lugar) + "," +
-                 str(p.identificador1) + "," +   # identificador1 (no equipo1)
-                 str(p.identificador2) + "," +   # identificador2 (no equipo2)
+                 str(p.identificador1) + "," +   # identificador1 
+                 str(p.identificador2) + "," +   # identificador2 
                  str(p.goles1) + "," +
                  str(p.goles2) + "," +
                  str(p.penales1) + "," +
@@ -95,10 +95,10 @@ def cargar_datos():
             # Restauramos las estadisticas 
             eq.total_p            = int(partes[7])
             eq.ganados            = int(partes[8])
-            eq.empate             = int(partes[9])    # empate, no empatados
+            eq.empate             = int(partes[9])    # empate
             eq.perdidos           = int(partes[10])
-            eq.goles_a            = int(partes[11])   # goles_a, no goles_f
-            eq.goles_c            = int(partes[12])
+            eq.goles_a            = int(partes[11])   # goles a favor
+            eq.goles_c            = int(partes[12])   # goles en contra
             eq.puntos             = int(partes[13])
             eq.avance             = partes[14]
             eq.tarjetas_amarillas = int(partes[15])
@@ -646,8 +646,6 @@ class PantallaConfiguracion:
             self.bloquear_formularios()
             messagebox.showinfo("Exito", "Configuracion cerrada. Ya puede registrar resultados e informes.")
 
-import tkinter as tk
-from tkinter import ttk, messagebox
 
 # PANTALLA 2: REGISTRO DE RESULTADOS
 class PantallaResultados:
@@ -655,12 +653,12 @@ class PantallaResultados:
         self.contenedor = contenedor
         self.app = app
 
-        # Apilamos esta pantalla en el historial (Asumiendo que historial_pantallas es global)
+        # Apilamos esta pantalla en el historial 
         historial_pantallas.append("RESULTADOS")
 
         self.app.crear_encabezado(self.contenedor)
 
-        # Inicializamos la cola con los partidos pendientes (Asumiendo función global)
+        # Inicializamos la cola con los partidos pendientes
         inicializar_cola_partidos()
 
         f_cuerpo = tk.Frame(self.contenedor, bg="#edcbf6")
@@ -1423,7 +1421,7 @@ class PantallaInformes:
 
 # ARRANQUE DE LA APLICACION
 if __name__ == "__main__":
-    cargar_datos() # Cargamos los datos guardados ANTES de construir la interfaz
+    cargar_datos() # Cargamos los datos guardados antes de construir la interfaz
 
     raiz_tk = tk.Tk() # Se crea la ventana raiz de Tkinter
     app_sistema = Aplicacion(raiz_tk) # Creamos la aplicacion pasandole la ventana raiz
