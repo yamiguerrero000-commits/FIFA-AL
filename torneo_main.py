@@ -396,8 +396,9 @@ class PantallaConfiguracion:
 
         tk.Label(f_equipo, text="Prefijo Tel:+", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=1, column=2, padx=8, pady=8, sticky="w")
         self.ent_pref = tk.Entry(f_equipo, width=18, bg="white", fg="black", insertbackground="black", bd=1)
+        self.ent_pref.insert(0, "+")  
         self.ent_pref.grid(row=1, column=3, padx=8, pady=8, sticky="w")
-
+        
         tk.Label(f_equipo, text="Confederacion:", bg=COLOR_CAJA, fg=COLOR_TEXTO_LABELS).grid(row=2, column=0, padx=8, pady=8, sticky="w")
         self.var_conf = tk.StringVar(f_equipo)
         self.var_conf.set("UEFA")
@@ -503,7 +504,6 @@ class PantallaConfiguracion:
     def redimensionar_fondo_canvas(self, evento=None):
         if not self.imagen_original or not self.canvas.winfo_exists():
             return
-
         
         ancho = self.canvas.winfo_width()
         alto = self.canvas.winfo_height()
@@ -511,10 +511,8 @@ class PantallaConfiguracion:
         if ancho <= 1 or alto <= 1:
             return
 
-
         imagen_rediseñada = self.imagen_original.resize((ancho, alto), Image.Resampling.LANCZOS)
         self.foto_fondo = ImageTk.PhotoImage(imagen_rediseñada)
-        
         
         self.canvas.delete("all")
         self.canvas.create_image(0, 0, anchor="nw", image=self.foto_fondo)
@@ -522,7 +520,6 @@ class PantallaConfiguracion:
         pos_x = (ancho - 935) // 2
         pos_y = (alto - 540) // 2
         
-
         self.canvas.create_window(max(0, pos_x), max(0, pos_y), anchor="nw", window=self.f_componentes)
 
     def bloquear_formularios(self):
@@ -579,10 +576,13 @@ class PantallaConfiguracion:
             messagebox.showerror("Error", "Todos los campos son obligatorios.")
             return
 
-        if not v_pref.isdigit():
-            messagebox.showerror("Error", "El prefijo telefonico debe ser un numero.")
+        if not (v_pref and v_pref[0] == "+" and v_pref[1:].isdigit()):
+            messagebox.showerror("Error", "El prefijo telefónico debe comenzar con '+' seguido de números.")
             return
-
+        else:
+            self.ent_pref.delete(0, tk.END)
+            self.ent_pref.insert(0, "+")
+        
         if len(v_abrev) != 3 or not v_abrev.isalpha():
             messagebox.showerror("Error", "La abreviatura debe tener exactamente 3 letras.")
             return
@@ -600,6 +600,7 @@ class PantallaConfiguracion:
         self.ent_pais.delete(0, "end")
         self.ent_abrev.delete(0, "end")
         self.ent_pref.delete(0, "end")
+        self.ent_pref.insert(0, "+")
 
         self.actualizar_tablas()
         self.actualizar_desplegables()

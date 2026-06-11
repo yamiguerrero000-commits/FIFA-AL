@@ -94,8 +94,10 @@ class torneo:
                 X.penales1=penales1 #penales del equipo local
                 X.penales2=penales2 #penales del equipo visitante
                 X.terminado=True #cambio automatico de registro de la clase partido
-                X.estado="jugado" # Fabri modificacion, actualizar estado
-                
+                X.estado="jugado" 
+                self.actualizar_estadisticas(local, visitante, gl, gv)
+
+
                 # Control automatico del avance para partidos que correspondan a la fase de eliminacion directa
                 if X.fase != "Grupos":
                     eq_l = self.busqueda(local)
@@ -131,8 +133,36 @@ class torneo:
             if X.identificador==identificador:
                 return X #retorno del equipo buscado
         return "Sin coincidencias"
+    
+    def actualizar_estadisticas(self, local, visitante, gl, gv):
+        eq_l = self.busqueda(local)
+        eq_v = self.busqueda(visitante)
 
-    # Fabri modificacion, tabla de posiciones por grupo 
+        # Partidos jugados
+        eq_l.total_p += 1
+        eq_v.total_p += 1
+
+        # Goles
+        eq_l.goles_a += gl
+        eq_l.goles_c += gv
+        eq_v.goles_a += gv
+        eq_v.goles_c += gl
+
+        # Resultado
+        if gl > gv:
+            eq_l.ganados += 1
+            eq_v.perdidos += 1
+            eq_l.puntos += 3
+        elif gv > gl:
+            eq_v.ganados += 1
+            eq_l.perdidos += 1
+            eq_v.puntos += 3
+        else:
+            eq_l.empate += 1
+            eq_v.empate += 1
+            eq_l.puntos += 1
+            eq_v.puntos += 1
+
     def tabla_posiciones(self, grupo):
         equipos_grupo = [e for e in self.equipos if e.grupo == grupo]
         n = len(equipos_grupo)
@@ -161,7 +191,6 @@ class torneo:
                     equipos_grupo[j], equipos_grupo[j + 1] = equipos_grupo[j + 1], equipos_grupo[j]
         return equipos_grupo
 
-    # Fabri modificacion, clasificación de mejores terceros
     def clasificar_mejores_terceros(self):
         terceros = []
         grupos = []

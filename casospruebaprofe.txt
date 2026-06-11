@@ -1,51 +1,51 @@
-<<<<<<< HEAD
-True
-EQUIPO,A1,Mexico,MEX,+52,CONCACAF,A,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,A2,Sudafrica,RSA,+27,CAF,A,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,A3,Corea del Sur,KOR,+82,AFC,A,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,A4,Chequia,CZE,+420,UEFA,A,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,B1,Canada,CAN,+1,CONCACAF,B,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,B2,Bosnia y Herzegovina,BIH,+387,UEFA,B,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,B3,Qatar,QAT,+974,AFC,B,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,B4,Suiza,SUI,+41,UEFA,B,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,C1,Brasil,BRA,+55,CONMEBOL,C,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,C2,Marruecos,MAR,+212,CAF,C,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,C3,Haiti,HAI,+509,CONCACAF,C,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,C4,Escocia,SCO,+44,UEFA,C,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,D1,Estados Unidos,USA,+1,CONCACAF,D,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,D2,Paraguay,PAR,+595,CONMEBOL,D,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,D3,Australia,AUS,+61,AFC,D,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,D4,Turquia,TUR,+90,UEFA,D,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,E1,Alemania,GER,+49,UEFA,E,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,E2,Curazao,CUW,+599,CONCACAF,E,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,E3,Costa de Marfil,CIV,+225,CAF,E,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,E4,Ecuador,ECU,+593,CONMEBOL,E,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,F1,Paises Bajos,NED,+31,UEFA,F,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,F2,Japon,JPN,+81,AFC,F,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,F3,Suecia,SWE,+46,UEFA,F,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,F4,Tunez,TUN,+216,CAF,F,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,G1,Belgica,BEL,+32,UEFA,G,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,G2,Egipto,EGY,+20,CAF,G,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,G3,Iran,IRN,+98,AFC,G,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,G4,Nueva Zelanda,NZL,+64,OFC,G,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,H1,España,ESP,+34,UEFA,H,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,H2,Cabo Verde,CPV,+238,CAF,H,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,H3,Arabia Saudita,KSA,+966,AFC,H,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,H4,Uruguay,URU,+598,CONMEBOL,H,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,I1,Francia,FRA,+33,UEFA,I,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,I2,Senegal,SEN,+221,CAF,I,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,I3,Iraq,IRQ,+964,AFC,I,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,I4,Noruega,NOR,+47,UEFA,I,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,J1,Argentina,ARG,+54,CONMEBOL,J,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,J2,Argelia,ALG,+213,CAF,J,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,J3,Austria,AUT,+43,UEFA,J,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,J4,Jordania,JOR,+962,AFC,J,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,K1,Portugal,POR,+351,UEFA,K,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,K2,Congo DR,COD,+243,CAF,K,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,K3,Uzbekistan,UZB,+998,AFC,K,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,K4,Colombia,COL,+57,CONMEBOL,K,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,L1,Inglaterra,ENG,+44,UEFA,L,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
-EQUIPO,L2,Croacia,CRO,+385,UEFA,L,0,0,0,0,0,0,0,Fase de Grupos,0,0,False
+EQUIPO,A1,Mexico,MEX,+52,CONCACAF,A,3,0,1,2,7,9,-2,Fase de Grupos,0,0,False
+EQUIPO,A2,Sudafrica,RSA,+27,CAF,A,3,0,1,2,6,12,-6,Fase de Grupos,0,0,False
+EQUIPO,A3,Corea del Sur,KOR,+82,AFC,A,3,3,0,0,9,0,9,Fase de Grupos,0,0,False
+EQUIPO,A4,Chequia,CZE,+420,UEFA,A,3,3,0,0,8,4,4,Fase de Grupos,0,0,False
+EQUIPO,B1,Canada,CAN,+1,CONCACAF,B,3,0,2,1,9,10,-1,Fase de Grupos,0,0,False
+EQUIPO,B2,Bosnia-Herzegovina,BIH,+387,UEFA,B,3,2,0,1,9,8,1,Fase de Grupos,0,0,False
+EQUIPO,B3,Qatar,QAT,+974,AFC,B,3,1,2,0,10,7,3,Fase de Grupos,0,0,False
+EQUIPO,B4,Suiza,SUI,+41,UEFA,B,3,0,2,1,4,7,-3,Fase de Grupos,0,0,False
+EQUIPO,C1,Brasil,BRA,+55,CONMEBOL,C,3,0,1,2,1,9,-8,Fase de Grupos,0,0,False
+EQUIPO,C2,Marruecos,MAR,+212,CAF,C,3,1,2,0,2,0,2,Fase de Grupos,0,0,False
+EQUIPO,C3,Haiti,HAI,+509,CONCACAF,C,3,3,0,0,9,3,6,Fase de Grupos,0,0,False
+EQUIPO,C4,Escocia,SCO,+44,UEFA,C,3,1,1,1,6,6,0,Fase de Grupos,0,0,False
+EQUIPO,D1,USA,USA,+1,CONCACAF,D,3,0,1,2,4,6,-2,Fase de Grupos,0,0,False
+EQUIPO,D2,Paraguay,PAR,+595,CONMEBOL,D,3,3,0,0,10,4,6,Fase de Grupos,0,0,False
+EQUIPO,D3,Australia,AUS,+61,AFC,D,3,1,0,2,4,7,-3,Fase de Grupos,0,0,False
+EQUIPO,D4,Turquia,TUR,+90,UEFA,D,3,1,1,1,8,9,-1,Fase de Grupos,0,0,False
+EQUIPO,E1,Alemania,GER,+49,UEFA,E,3,1,1,1,4,7,-3,Fase de Grupos,0,0,False
+EQUIPO,E2,Curazao,CUW,+599,CONCACAF,E,3,2,1,0,7,6,1,Fase de Grupos,0,0,False
+EQUIPO,E3,Costa de Marfil,CIV,+225,CAF,E,3,0,2,1,6,7,-1,Fase de Grupos,0,0,False
+EQUIPO,E4,Ecuador,ECU,+593,CONMEBOL,E,3,1,2,0,6,3,3,Fase de Grupos,0,0,False
+EQUIPO,F1,Paises Bajos,NED,+31,UEFA,F,3,1,1,1,8,7,1,Fase de Grupos,0,0,False
+EQUIPO,F2,Japon,JPN,+81,AFC,F,3,0,3,0,9,9,0,Fase de Grupos,0,0,False
+EQUIPO,F3,Tunez,TUN,+216,CAF,F,3,2,1,0,10,8,2,Fase de Grupos,0,0,False
+EQUIPO,F4,Suecia,SWE,+46,UEFA,F,3,1,1,1,7,10,-3,Fase de Grupos,0,0,False
+EQUIPO,G1,Belgica,BEL,+32,UEFA,G,3,0,1,2,6,10,-4,Fase de Grupos,0,0,False
+EQUIPO,G2,Egypto,EGY,+20,CAF,G,3,1,2,0,7,6,1,Fase de Grupos,0,0,False
+EQUIPO,G3,Iran,IRN,+98,AFC,G,3,1,2,0,5,4,1,Fase de Grupos,0,0,False
+EQUIPO,G4,Nueva Zelanda,NZL,+64,OFC,G,3,0,3,0,5,5,0,Fase de Grupos,0,0,False
+EQUIPO,H1,Espana,ESP,+34,UEFA,H,3,2,0,1,10,5,5,Fase de Grupos,0,0,False
+EQUIPO,H2,Cabo Verde,CPV,+238,CAF,H,3,0,0,3,4,10,-6,Fase de Grupos,0,0,False
+EQUIPO,H3,Arabia Saudita,KSA,+966,AFC,H,3,1,0,2,2,7,-5,Fase de Grupos,0,0,False
+EQUIPO,H4,Uruguay,URU,+598,CONMEBOL,H,3,3,0,0,9,5,4,Fase de Grupos,0,0,False
+EQUIPO,I1,Francia,FRA,+33,UEFA,I,3,2,1,0,8,2,6,Fase de Grupos,0,0,False
+EQUIPO,I2,Senegal,SEN,+221,CAF,I,3,0,0,3,2,10,-8,Fase de Grupos,0,0,False
+EQUIPO,I3,Irak,IRQ,+964,AFC,I,3,1,1,1,5,6,-1,Fase de Grupos,0,0,False
+EQUIPO,I4,Noruega,NOR,+47,UEFA,I,3,1,2,0,4,3,1,Fase de Grupos,0,0,False
+EQUIPO,J1,Argentina,ARG,+54,CONMEBOL,J,3,0,3,0,7,7,0,Fase de Grupos,0,0,False
+EQUIPO,J2,Argelia,ALG,+213,CAF,J,3,0,3,0,5,5,0,Fase de Grupos,0,0,False
+EQUIPO,J3,Austria,AUT,+43,UEFA,J,3,0,3,0,3,3,0,Fase de Grupos,0,0,False
+EQUIPO,J4,Jordania,JOR,+962,AFC,J,3,0,3,0,4,4,0,Fase de Grupos,0,0,False
+EQUIPO,K1,Portugal,POR,+351,UEFA,K,3,1,0,2,9,8,1,Fase de Grupos,0,0,False
+EQUIPO,K2,Congo,COD,+243,CAF,K,3,1,0,2,3,8,-5,Fase de Grupos,0,0,False
+EQUIPO,K3,Uzbekistan,UZB,+998,AFC,K,3,1,0,2,6,9,-3,Fase de Grupos,0,0,False
+EQUIPO,K4,Colombia,COL,+57,CONMEBOL,K,3,2,0,1,9,3,6,Fase de Grupos,0,0,False
+EQUIPO,L1,Inglaterra,ENG,+44,UEFA,L,3,1,2,0,10,8,2,Fase de Grupos,0,0,False
+EQUIPO,L2,Croacia,CRO,+385,UEFA,L,3,0,2,1,6,9,-3,Fase de Grupos,0,0,False
+EQUIPO,L3,Polonia,POL,+48,UEFA,L,3,2,0,1,7,5,2,Fase de Grupos,0,0,False
+EQUIPO,L4,Chile,CHI,+56,CONMEBOL,L,3,1,0,2,5,6,-1,Fase de Grupos,0,0,False
 PARTIDO,2026-06-11,3:00 p.m. ET,Estadio Azteca,MEX,RSA,4,4,0,0,True,jugado
 PARTIDO,2026-06-11,10:00 p.m. ET,Seoul World Cup Stadium,KOR,CZE,1,0,0,0,True,jugado
 PARTIDO,2026-06-18,12:00 p.m. ET,Eden Arena,CZE,RSA,4,1,0,0,True,jugado
@@ -110,6 +110,3 @@ PARTIDO,2026-06-17,4:00 p.m. ET,Wembley Stadium,ENG,CRO,3,3,0,0,True,jugado
 PARTIDO,2026-06-17,7:00 p.m. ET,Cape Coast Stadium,GHA,PAN,3,3,0,0,True,jugado
 PARTIDO,2026-06-23,4:00 p.m. ET,Wembley Stadium,ENG,GHA,4,2,0,0,True,jugado
 PARTIDO,2026-06-23,7:00 p.m. ET,Estadio Rommel Fernández,PAN,CRO,3,0,0,0,True,jugado
-=======
-False
->>>>>>> 0aa01ed3c9255007cb2ac446bb197d6b263baba9
