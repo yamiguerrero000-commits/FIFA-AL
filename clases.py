@@ -15,12 +15,12 @@ class equipo:
         self.puntos=0 #total de puntos
         self.avance="Fase de Grupos" #lugar del equipo 
 
-        # Fabri modificacion, atributos disciplina
+        #atributos disciplina
         self.tarjetas_amarillas = 0
         self.tarjetas_rojas = 0
         self.suspendido = False
 
-    # Fabri modificacion, registrar tarjetas
+    #registrar tarjetas
     def registrar_tarjeta(self, tipo):
         if tipo == "amarilla":
             self.tarjetas_amarillas += 1
@@ -30,7 +30,7 @@ class equipo:
             self.tarjetas_rojas += 1
             self.suspendido = True
 
-    # Fabri modificacion, fair play
+    #fair play
     def fair_play_score(self):
         return -(self.tarjetas_amarillas + 4 * self.tarjetas_rojas)
 
@@ -49,10 +49,10 @@ class partido:
         self.terminado=False
         self.fase=fase # "Grupos", "Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final" 
 
-        # Fabri modificacion, estado del partido
+        #estado del partido
         self.estado = "programado"
 
-    # Fabri modificacion, registrar resultado
+    #registrar resultado
     def registrar_resultado(self, gl, gv, penales1=0, penales2=0):
         self.goles1 = gl
         self.goles2 = gv
@@ -61,7 +61,7 @@ class partido:
         self.terminado = True
         self.estado = "jugado"
 
-    # Fabri modificacion, suspender y reanudar
+#suspender y reanudar
     def suspender(self):
         self.estado = "suspendido"
 
@@ -88,7 +88,13 @@ class torneo:
 
     def resultado(self, local, visitante, fecha, gl, gv, penales1, penales2):
         for X in self.partidos:
-            if (X.identificador1 == local) and (X.identificador2 == visitante) and (X.fecha == fecha) and not X.terminado:
+            # Verificamos coincidencia exacta del partido
+            if (X.identificador1 == local and X.identificador2 == visitante and X.fecha == fecha):
+
+                if X.terminado:
+                    return "Este partido ya fue registrado anteriormente."
+
+                # Guardamos los datos del resultado
                 X.goles1 = gl
                 X.goles2 = gv
                 X.penales1 = penales1
@@ -96,27 +102,31 @@ class torneo:
                 X.terminado = True
                 X.estado = "jugado"
 
-                if X.fase != "Grupos":
+                # Actualizamos estadísticas solo una vez
+                self.actualizar_estadisticas(local, visitante, gl, gv)
+
+                # Control automático del avance para fases eliminatorias
+                if hasattr(X, "fase") and X.fase != "Grupos":
                     eq_l = self.busqueda(local)
                     eq_v = self.busqueda(visitante)
 
-                    if not isinstance(eq_l, str) and not isinstance(eq_v, str):
-                        if gl > gv or (gl == gv and penales1 > penales2):
-                            ganador = eq_l
-                            perdedor = eq_v
-                        elif gv > gl or (gl == gv and penales2 > penales1):
-                            ganador = eq_v
-                            perdedor = eq_l
+                    if gl > gv:
+                        ganador, perdedor = eq_l, eq_v
+                    elif gv > gl:
+                        ganador, perdedor = eq_v, eq_l
+                    else:
+                        # En caso de empate, se define por penales
+                        if penales1 >= penales2:
+                            ganador, perdedor = eq_l, eq_v
                         else:
-                            ganador = eq_l
-                            perdedor = eq_v
+                            ganador, perdedor = eq_v, eq_l
 
-                        fases = ["Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final", "Campeón"]
-                        if X.fase in fases:
-                            idx = fases.index(X.fase)
-                            if idx < len(fases) - 1:
-                                ganador.avance = fases[idx + 1]
-                                perdedor.avance = "Eliminado"
+                    fases = ["Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final", "Campeón"]
+                    if X.fase in fases:
+                        idx = fases.index(X.fase)
+                        ganador.avance = fases[idx + 1]
+                        if ganador.avance == "Campeón":
+                            perdedor.avance = "Vicecampeón"
 
                 return "Datos guardados con exito"
 
@@ -131,8 +141,48 @@ class torneo:
             if X.identificador==identificador:
                 return X #retorno del equipo buscado
         return "Sin coincidencias"
+    
+    def actualizar_estadisticas(self, local, visitante, gl, gv):
+        eq_l = self.busqueda(local)
+        eq_v = self.busqueda(visitante)
 
-    # Fabri modificacion, tabla de posiciones por grupo 
+
+        partido_existente = None
+        for p in self.partidos:
+            if p.identificador1 == local and p.identificador2 == visitante and p.terminado:
+                partido_existente = p
+                break
+
+        if partido_existente:
+            # Si el partido ya está terminado, no volver a sumar estadísticas
+            return
+
+        # Partidos jugados
+        eq_l.total_p += 1
+        eq_v.total_p += 1
+
+        # Goles
+        eq_l.goles_a += gl
+        eq_l.goles_c += gv
+        eq_v.goles_a += gv
+        eq_v.goles_c += gl
+
+        # Resultado
+        if gl > gv:
+            eq_l.ganados += 1
+            eq_v.perdidos += 1
+            eq_l.puntos += 3
+        elif gv > gl:
+            eq_v.ganados += 1
+            eq_l.perdidos += 1
+            eq_v.puntos += 3
+        else:
+            eq_l.empate += 1
+            eq_v.empate += 1
+            eq_l.puntos += 1
+            eq_v.puntos += 1
+
+
     def tabla_posiciones(self, grupo):
         equipos_grupo = [e for e in self.equipos if e.grupo == grupo]
         n = len(equipos_grupo)
@@ -161,7 +211,6 @@ class torneo:
                     equipos_grupo[j], equipos_grupo[j + 1] = equipos_grupo[j + 1], equipos_grupo[j]
         return equipos_grupo
 
-    # Fabri modificacion, clasificación de mejores terceros
     def clasificar_mejores_terceros(self):
         terceros = []
         grupos = []
@@ -199,19 +248,16 @@ class torneo:
         return terceros 
 
     def avanzar_fase_eliminatoria(self):
-        """
-        Agrupa los 2 primeros de cada grupo, calcula los 8 mejores terceros,
-        y arma de forma directa las llaves de Dieciseisavos dentro de self.partidos.
-        """
+
         clasificados = []
         grupos = []
 
-        
+        # recolectamos grupos
         for e in self.equipos:
             if e.grupo not in grupos:
                 grupos.append(e.grupo)
 
-        
+        # agregamos primeros y segundos
         for g in grupos:
             tabla = self.tabla_posiciones(g)
             if len(tabla) >= 1:
@@ -219,35 +265,33 @@ class torneo:
             if len(tabla) >= 2:
                 clasificados.append(tabla[1])
 
-        
+        # mejores terceros
         terceros_ordenados = self.clasificar_mejores_terceros()
         mejores_terceros = terceros_ordenados[:8]
-        clasificados.extend(mejores_terceros) 
+        clasificados.extend(mejores_terceros)
 
 
         for e in self.equipos:
             if e not in clasificados:
-                e.avance = "Fase de Grupos"
+                e.avance = "Eliminado en Fase de Grupos"
 
-        
+        # armamos dieciseisavos
         total = len(clasificados)
         for i in range(total // 2):
             local = clasificados[i]
             visitante = clasificados[total - 1 - i]
 
-            # Seteamos el estatus inicial en play-offs
             local.avance = "Dieciseisavos"
             visitante.avance = "Dieciseisavos"
 
-            # Creamos el objeto partido registrando que pertenece a la fase "Dieciseisavos"
             nuevo_p = partido(
-                fecha="2026-06-28", 
-                hora="16:00", 
-                lugar="Estadio Copa Mundial", 
-                id1=local.identificador, 
+                fecha="2026-06-28",
+                hora="16:00",
+                lugar="Estadio Copa Mundial",
+                id1=local.identificador,
                 id2=visitante.identificador,
                 fase="Dieciseisavos"
             )
             self.partidos.append(nuevo_p)
-            
+
         return f"¡Fase Eliminatoria Generada! {total} equipos clasificados a Dieciseisavos de Final."

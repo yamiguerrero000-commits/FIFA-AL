@@ -30,8 +30,8 @@ def pedir_abreviatura():
 def pedir_prefijo():
     while True:
         prefijo = input("Prefijo telefónico: ").strip()
-        if es_numero(prefijo):
-            return int(prefijo)
+        if prefijo and prefijo[0] == "+" and prefijo[1:].isdigit():
+            return prefijo
         print("Error: el prefijo debe ser un número.")
 
 def pedir_grupo():
@@ -48,7 +48,7 @@ def pedir_confederacion():
             return conf
         print("Error: confederación inválida.")
 
-# MENÚ PRINCIPAL
+# Menu de configuracion del torneo
 def configurar_torneo():
     while True:
         print("\n CONFIGURACIÓN DEL TORNEO ")
@@ -127,3 +127,4 @@ def configurar_torneo():
 
 if __name__ == "__main__":
     configurar_torneo()
+    

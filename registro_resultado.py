@@ -79,6 +79,7 @@ def mostrar_mejores_terceros():
 def avanzar_eliminacion_directa():
     print("\n FASE DE ELIMINACION DIRECTA ")
     
+
     mensaje_fase = torneo_actual.avanzar_fase_eliminatoria()
     print(mensaje_fase)
 
