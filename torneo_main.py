@@ -3,20 +3,19 @@ from tkinter import messagebox        # para mostrar carteles emergentes de aler
 from tkinter import ttk               # para tablas 
 import os                             # existencia de archivo
 import time                           # hora actual
-from PIL import Image, ImageTk       # fondo
+from PIL import Image, ImageTk        # fondo
 import os
 from conf_torneo import torneo_actual
 from clases import equipo, partido
 
-# PERSISTENCIA: GUARDAR Y CARGAR DATOS EN ARCHIVO DE TEXTO
+#Guardar y cargar datos
 def guardar_datos():
-    # Abrimos el archivo en modo escritura. Si no existe, lo crea automaticamente
     archivo = open("datos_torneo.txt", "w", encoding="utf-8")
 
-    # Primera linea: guardamos si la configuracion esta cerrada 
+    # Guardamos la configuracion como cerrada 
     archivo.write(str(torneo_actual.datos) + "\n")
 
-    # Guardamos cada equipo en una linea con sus atributos separados por comas
+    # Cada equipo con sus atributos entre comas
     for eq in torneo_actual.equipos:
         linea = ("EQUIPO," +
                  str(eq.identificador) + "," +
@@ -27,10 +26,10 @@ def guardar_datos():
                  str(eq.grupo) + "," +
                  str(eq.total_p) + "," +
                  str(eq.ganados) + "," +
-                 str(eq.empate) + "," +        # empate (no empatados)
+                 str(eq.empate) + "," +        
                  str(eq.perdidos) + "," +
-                 str(eq.goles_a) + "," +       # goles_a (no goles_f)
-                 str(eq.goles_c) + "," +
+                 str(eq.goles_a) + "," +       # goles a favor
+                 str(eq.goles_c) + "," +       # goles en contra
                  str(eq.puntos) + "," +
                  str(eq.avance) + "," +
                  str(eq.tarjetas_amarillas) + "," +
@@ -38,14 +37,14 @@ def guardar_datos():
                  str(eq.suspendido) + "\n")
         archivo.write(linea)
 
-    # Guardamos cada partido en una linea con sus atributos
+    # Partidos con atributos
     for p in torneo_actual.partidos:
         linea = ("PARTIDO," +
                  str(p.fecha) + "," +
                  str(p.hora) + "," +
                  str(p.lugar) + "," +
-                 str(p.identificador1) + "," +   # identificador1 (no equipo1)
-                 str(p.identificador2) + "," +   # identificador2 (no equipo2)
+                 str(p.identificador1) + "," +   # identificador1 
+                 str(p.identificador2) + "," +   # identificador2 
                  str(p.goles1) + "," +
                  str(p.goles2) + "," +
                  str(p.penales1) + "," +
@@ -58,14 +57,14 @@ def guardar_datos():
 
 
 def cargar_datos():
-    # Verificamos si el archivo existe antes de intentar abrirlo 
+
     if not os.path.exists("datos_torneo.txt"):
         return   # si no existe, salimos sin hacer nada 
     archivo = open("datos_torneo.txt", "r", encoding="utf-8")
     lineas = archivo.readlines()   # leemos todas las lineas de una vez en una lista
     archivo.close()
 
-    # Si el archivo esta vacio, salimos
+    # Salir si el archivo esta vacio
     if len(lineas) == 0:
         return
 
@@ -95,9 +94,9 @@ def cargar_datos():
             # Restauramos las estadisticas 
             eq.total_p            = int(partes[7])
             eq.ganados            = int(partes[8])
-            eq.empate             = int(partes[9])    # empate, no empatados
+            eq.empate             = int(partes[9])    
             eq.perdidos           = int(partes[10])
-            eq.goles_a            = int(partes[11])   # goles_a, no goles_f
+            eq.goles_a            = int(partes[11])   
             eq.goles_c            = int(partes[12])
             eq.puntos             = int(partes[13])
             eq.avance             = partes[14]
@@ -108,7 +107,7 @@ def cargar_datos():
             torneo_actual.equipos.append(eq)
 
         elif partes[0] == "PARTIDO":
-            # Creamos el partido con los datos basicos usando los parametros correctos
+            # Creamos el partido con los datos basicos 
             p = partido(partes[1], partes[2], partes[3], partes[4], partes[5])
             # Restauramos el resultado y estado
             p.goles1    = int(partes[6])
@@ -120,7 +119,7 @@ def cargar_datos():
             # Agregamos el partido reconstruido al torneo
             torneo_actual.partidos.append(p)
 
-# ESTRUCTURAS DE DATOS: PILA Y COLA
+# Pilas y colas
 historial_pantallas = []
 cola_partidos = []
 
@@ -130,10 +129,10 @@ def inicializar_cola_partidos():
     cola_partidos = []
     for p in torneo_actual.partidos:
         if not p.terminado:
-            cola_partidos.append(p)   # enqueue: agregamos al final de la cola
+            cola_partidos.append(p)   
 
 
-# CLASE PRINCIPAL: APLICACION 
+# Aplicacion
 
 class Aplicacion:
     def __init__(self, raiz):
@@ -322,7 +321,7 @@ class Aplicacion:
             self.raiz.destroy()
 
 
-# PANTALLA 1: CONFIGURACION DEL TORNEO
+# Pantalla 1: Configuracion del Torneo
 
 class PantallaConfiguracion:
     def __init__(self, contenedor, app):
@@ -477,7 +476,7 @@ class PantallaConfiguracion:
             self.tabla_p.column(col, width=ancho, anchor="center")
         self.tabla_p.place(x=480, y=280, width=440, height=140)
 
-        # BOTONES INFERIORES
+        # Botones inferiores
 
         self.btn_cerrar = tk.Button(self.f_componentes,
                                      text="🔒   Cerrar Configuracion del Torneo",
@@ -647,7 +646,7 @@ class PantallaConfiguracion:
             self.bloquear_formularios()
             messagebox.showinfo("Exito", "Configuracion cerrada. Ya puede registrar resultados e informes.")
 
-# PANTALLA 2: REGISTRO DE RESULTADOS
+# Pantalla 2:Registro
 class PantallaResultados:
     def __init__(self, contenedor, app):
         self.contenedor = contenedor
@@ -679,7 +678,7 @@ class PantallaResultados:
             self.tabla_cola.column(col, width=ancho, anchor="center")
         self.tabla_cola.pack(fill="x", pady=5)
 
-        # Al hacer clic en una fila de la cola, se activan los campos de goles
+        # Al hacer clic en una fila de la cola activar los campos de goles
         self.tabla_cola.bind("<<TreeviewSelect>>", self.seleccionar_partido)
 
         # Frame del formulario de marcador
@@ -708,6 +707,10 @@ class PantallaResultados:
         tk.Label(f_goles, text="Goles Visitante:", bg="#6f0c50", fg="white").grid(row=0, column=2, padx=10, pady=5)
         self.ent_gv = tk.Entry(f_goles, width=8, state="disabled")
         self.ent_gv.grid(row=0, column=3, padx=10, pady=5)
+
+        #Eventos para chequear empate cada vez que se escribe un gol
+        self.ent_gl.bind("<KeyRelease>", self.verificar_empate)
+        self.ent_gv.bind("<KeyRelease>", self.verificar_empate)
 
         # Fila 1: Penales
         tk.Label(f_goles, text="Penales Local:", bg="#6f0c50", fg="white").grid(row=1, column=0, padx=10, pady=5)
@@ -773,6 +776,33 @@ class PantallaResultados:
         # Cargamos la tabla con la cola actual
         self.actualizar_tabla_cola()
 
+    #Metodo para chequear si hay empate y habilitar/deshabilitar penales
+    def verificar_empate(self, event=None):
+        goles_l = self.ent_gl.get().strip()
+        goles_v = self.ent_gv.get().strip()
+
+        # Solo evaluamos si ambos campos tienen numeros
+        if goles_l.isdigit() and goles_v.isdigit():
+            if int(goles_l) == int(goles_v):
+                # Hay empate, habilitamos penales
+                self.ent_pl.config(state="normal")
+                self.ent_pv.config(state="normal")
+            else:
+                # No hay empate, deshabilitamos penales y los limpiamos
+                self.ent_pl.delete(0, "end")
+                self.ent_pv.delete(0, "end")
+                # Ponemos "0" por defecto para que la validacion final no falle
+                self.ent_pl.insert(0, "0")
+                self.ent_pv.insert(0, "0")
+                self.ent_pl.config(state="disabled")
+                self.ent_pv.config(state="disabled")
+        else:
+            # Si borran los goles o escriben texto, deshabilitamos penales
+            self.ent_pl.delete(0, "end")
+            self.ent_pv.delete(0, "end")
+            self.ent_pl.config(state="disabled")
+            self.ent_pv.config(state="disabled")
+
     def actualizar_tabla_cola(self):
         # Borramos las filas actuales de la tabla
         for item in self.tabla_cola.get_children():
@@ -808,14 +838,31 @@ class PantallaResultados:
             self.lbl_vs.config(text=self.partido_seleccionado.identificador1 +
                                     "  VS  " +
                                     self.partido_seleccionado.identificador2)
+            
+            # Limpiamos todos los campos por si tenían basura
             self.ent_gl.config(state="normal")
+            self.ent_gl.delete(0, "end")
             self.ent_gv.config(state="normal")
+            self.ent_gv.delete(0, "end")
+            
+            #Penales arrancan deshabilitados hasta que haya empate
             self.ent_pl.config(state="normal")
+            self.ent_pl.delete(0, "end")
+            self.ent_pl.config(state="disabled")
+            
             self.ent_pv.config(state="normal")
+            self.ent_pv.delete(0, "end")
+            self.ent_pv.config(state="disabled")
+
             self.ent_al.config(state="normal")
+            self.ent_al.delete(0, "end")
             self.ent_av.config(state="normal")
+            self.ent_av.delete(0, "end")
             self.ent_rl.config(state="normal")
+            self.ent_rl.delete(0, "end")
             self.ent_rv.config(state="normal")
+            self.ent_rv.delete(0, "end")
+
             self.btn_registrar.config(state="normal")
             self.btn_suspender.config(state="normal")
             self.btn_reanudar.config(state="normal")
@@ -824,10 +871,15 @@ class PantallaResultados:
         if not self.partido_seleccionado:
             return
 
-        # Verificamos que el partido seleccionado sea el primero de la cola (orden FIFO)
+        # Verificamos que el partido seleccionado sea el primero de la cola 
         if len(cola_partidos) == 0 or self.partido_seleccionado != cola_partidos[0]:
             messagebox.showwarning("Atencion",
-                                   "Debe registrar los resultados en orden. Seleccione el primero de la cola.")
+                                "Debe registrar los resultados en orden. Seleccione el primero de la cola.")
+            return
+
+
+        if self.partido_seleccionado.terminado:
+            messagebox.showwarning("Aviso", "Este partido ya fue registrado anteriormente.")
             return
 
         # Obtenemos los goles, penales y tarjetas ingresados
@@ -859,7 +911,7 @@ class PantallaResultados:
         rl = int(rl_str)
         rv = int(rv_str)
 
-        
+        # Guardamos resultado en el objeto torneo
         mensaje = torneo_actual.resultado(
             self.partido_seleccionado.identificador1,
             self.partido_seleccionado.identificador2,
@@ -903,13 +955,15 @@ class PantallaResultados:
             eq_visitante.tarjetas_amarillas += av
             eq_visitante.tarjetas_rojas     += rv
 
-
             if eq_local.tarjetas_rojas > 0 or (eq_local.tarjetas_amarillas > 0 and eq_local.tarjetas_amarillas % 2 == 0):
                 eq_local.suspendido = True
             if eq_visitante.tarjetas_rojas > 0 or (eq_visitante.tarjetas_amarillas > 0 and eq_visitante.tarjetas_amarillas % 2 == 0):
                 eq_visitante.suspendido = True
 
-            # OPERACION DE COLA: sacamos el partido del frente (dequeue)
+            # Marcamos el partido como terminado para evitar duplicaciones futuras
+            self.partido_seleccionado.terminado = True
+
+            #Sacamos el partido del frente
             cola_partidos.pop(0)
 
             # Limpiamos y deshabilitamos los campos
@@ -921,7 +975,7 @@ class PantallaResultados:
             self.ent_av.delete(0, "end")
             self.ent_rl.delete(0, "end")
             self.ent_rv.delete(0, "end")
-            
+
             self.ent_gl.config(state="disabled")
             self.ent_gv.config(state="disabled")
             self.ent_pl.config(state="disabled")
@@ -930,7 +984,7 @@ class PantallaResultados:
             self.ent_av.config(state="disabled")
             self.ent_rl.config(state="disabled")
             self.ent_rv.config(state="disabled")
-            
+
             self.btn_registrar.config(state="disabled")
             self.btn_suspender.config(state="disabled")
             self.btn_reanudar.config(state="disabled")
@@ -942,6 +996,7 @@ class PantallaResultados:
             guardar_datos()  # guardamos cambios en el torneo
         else:
             messagebox.showerror("Error", mensaje)
+
 
     def suspender_partido(self):
         if self.partido_seleccionado:
@@ -958,9 +1013,7 @@ class PantallaResultados:
             guardar_datos()  # guardamos cambios en el torneo
 
 
-# PANTALLA 3: EMISION DE INFORMES 
-
-#Informe 1
+# Pantalla 3: Informes 
 
 class PantallaInformes:
     def __init__(self, contenedor, app):
@@ -1014,7 +1067,7 @@ class PantallaInformes:
         for widget in self.f_zona.winfo_children():
             widget.destroy()
 
-    # INFORME 1: partidos de una fecha especifica
+# Informe 1: partidos de una fecha especifica
     def mostrar_informe1(self):
         self.limpiar_zona()
 
@@ -1031,10 +1084,16 @@ class PantallaInformes:
         ent_fecha = tk.Entry(f_busq, width=14)
         ent_fecha.pack(side="left", padx=5)
 
-        # Tabla de resultados
+        style = ttk.Style()
+        style.configure("Treeview", 
+                        background="white", 
+                        foreground="black", 
+                        fieldbackground="white")
+
         tabla = ttk.Treeview(self.f_zona,
                               columns=("Hora", "Local", "Visitante", "Lugar", "Estado", "Resultado"),
-                              show="headings")
+                              show="headings", style="Treeview") # Aplicamos el estilo
+                              
         for col, ancho in [("Hora", 60), ("Local", 110), ("Visitante", 110), ("Lugar", 180), ("Estado", 100), ("Resultado", 120)]:
             tabla.heading(col, text=col)
             tabla.column(col, width=ancho, anchor="center")
@@ -1067,7 +1126,7 @@ class PantallaInformes:
                   bg="#cb3ba9", fg="white",
                   command=buscar).pack(side="left", padx=8)
 
-    # INFORME 2: tabla de posiciones de un grupo
+# Informe 2: tabla de posiciones de un grupo
     def mostrar_informe2(self):
         self.limpiar_zona()
 
@@ -1115,7 +1174,7 @@ class PantallaInformes:
                   command=consultar).pack(side="left", padx=8)
         consultar()   # cargamos el grupo A por defecto al abrir
 
-# INFORME 3: historial de partidos de un equipo 
+#Informe 3: historial de partidos y avance de un equipo
 
     def mostrar_informe3(self):
         self.limpiar_zona()
@@ -1169,6 +1228,8 @@ class PantallaInformes:
                 txt.insert("end", "=" * 55 + "\n\n")
 
                 hay_partidos = False
+                partidos_perdidos = 0  
+
                 for p in torneo_actual.partidos:
                     if (p.identificador1 == eq_obj.identificador or
                             p.identificador2 == eq_obj.identificador):
@@ -1176,7 +1237,13 @@ class PantallaInformes:
                             hay_partidos = True
                             marcador = str(p.goles1) + " - " + str(p.goles2)
                             
-                            # Línea original corregida: se eliminó la etiqueta de fase [Grupos]
+
+                            if p.identificador1 == eq_obj.identificador and p.goles1 < p.goles2:
+                                partidos_perdidos += 1
+                            elif p.identificador2 == eq_obj.identificador and p.goles2 < p.goles1:
+                                partidos_perdidos += 1
+                            
+
                             txt.insert("end",
                                         "Fecha: " + p.fecha +
                                         "  |  " + p.identificador1 +
@@ -1195,20 +1262,23 @@ class PantallaInformes:
 
                 txt.insert("end", "\n" + "=" * 55 + "\n")
                 
-                
+                avance_texto = eq_obj.avance 
+
                 if eq_obj.avance == "Fase" or eq_obj.avance == "Fase de Grupos":
-                    leyenda_etapa = "Disputando la Fase de Grupos"
+                    if partidos_perdidos > 0:
+                        avance_texto = "Eliminado"
+                        leyenda_etapa = "Eliminado en Fase de Grupos"
+                    else:
+                        leyenda_etapa = "Disputando la Fase de Grupos"
                 elif eq_obj.avance in ["Campeón", "Vicecampeón"]:
                     leyenda_etapa = f"¡Finalista del Torneo Mundial! - Puesto: {eq_obj.avance}"
                 else:
-                    # Se activa cuando asignas al equipo valores como "Dieciseisavos", "Octavos", etc.
                     leyenda_etapa = f"Clasificado a la etapa de {eq_obj.avance} del Mundial"
                 
-                txt.insert("end", "ESTADO DE AVANCE: " + eq_obj.avance + "\n")
+                txt.insert("end", "ESTADO DE AVANCE: " + avance_texto + "\n")
                 txt.insert("end", "SITUACIÓN DE ETAPA: " + leyenda_etapa + "\n")
                 txt.insert("end", "=" * 55 + "\n")
 
-            # Deshabilitamos para que no se pueda editar
             txt.config(state="disabled")
 
         tk.Button(f_ctrl, text="Ver Historial",
@@ -1216,7 +1286,7 @@ class PantallaInformes:
                   command=ver_historial).pack(side="left", padx=8)
         ver_historial()   # cargamos el primer equipo por defecto
 
-# INFORME 4: proximo partido de un equipo desde una fecha 
+# Informe 4: proximo partido de un equipo desde una fecha 
 
     def mostrar_informe4(self):
         self.limpiar_zona()
@@ -1340,9 +1410,9 @@ class PantallaInformes:
                   bg="#b9369a", fg="white",
                   command=buscar_proximo).grid(row=0, column=4, padx=12)
         
-        buscar_proximo()   # Carga el resultado por defecto al iniciar la pantalla
+        buscar_proximo()   
 
-    # INFORME 5: clasificacion general de todos los grupos
+    # Informe 5: clasificacion general de todos los grupos
 
     def mostrar_informe5(self):
         self.limpiar_zona()
@@ -1355,7 +1425,7 @@ class PantallaInformes:
         f_scroll = tk.Frame(self.f_zona, bg="#681345")
         f_scroll.pack(fill="both", expand=True)
 
-        canvas = tk.Canvas(f_scroll, bg="#681345", highlightthickness=0)
+        canvas = tk.Canvas(f_scroll, bg="#C75B9E", highlightthickness=0)
         scrollbar = tk.Scrollbar(f_scroll, orient="vertical", command=canvas.yview)
 
         f_interno = tk.Frame(canvas, bg="#AA407E")
@@ -1436,9 +1506,9 @@ class PantallaInformes:
                                     width=ancho).grid(row=pos,column=col_i)
                     pos += 1
 
-# ARRANQUE DE LA APLICACION
+# Arranque de aplicacion
 if __name__ == "__main__":
-    cargar_datos() # Cargamos los datos guardados ANTES de construir la interfaz
+    cargar_datos() # Cargamos los datos guardados antes de construir la interfaz
 
     raiz_tk = tk.Tk() # Se crea la ventana raiz de Tkinter
     app_sistema = Aplicacion(raiz_tk) # Creamos la aplicacion pasandole la ventana raiz

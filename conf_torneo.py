@@ -48,7 +48,7 @@ def pedir_confederacion():
             return conf
         print("Error: confederación inválida.")
 
-# MENÚ PRINCIPAL
+# Menu de configuracion del torneo
 def configurar_torneo():
     while True:
         print("\n CONFIGURACIÓN DEL TORNEO ")
