@@ -866,7 +866,7 @@ class PantallaResultados:
             gl, gv, pl, pv
         )
 
-        if mensaje == "Datos dos guardados con exito" or mensaje == "Datos guardados con exito":
+        if mensaje == "Datos guardados con exito":
             # Buscamos los objetos equipo para actualizar sus estadisticas
             eq_local     = torneo_actual.busqueda(self.partido_seleccionado.identificador1)
             eq_visitante = torneo_actual.busqueda(self.partido_seleccionado.identificador2)

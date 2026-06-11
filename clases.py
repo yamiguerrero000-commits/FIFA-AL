@@ -86,46 +86,41 @@ class torneo:
         if not self.datos:
             self.partidos.append(partido)
 
-    def resultado(self, local, visitante,fecha,gl,gv,penales1,penales2):
+    def resultado(self, local, visitante, fecha, gl, gv, penales1, penales2):
         for X in self.partidos:
-            if (X.identificador1==local ) and (X.identificador2==visitante) and (X.fecha==fecha) and not (X.terminado):
-                X.goles1=gl #goles del equipo local
-                X.goles2=gv #goles del equipo visitante
-                X.penales1=penales1 #penales del equipo local
-                X.penales2=penales2 #penales del equipo visitante
-                X.terminado=True #cambio automatico de registro de la clase partido
-                X.estado="jugado" # Fabri modificacion, actualizar estado
-                
-                # Control automatico del avance para partidos que correspondan a la fase de eliminacion directa
+            if (X.identificador1 == local) and (X.identificador2 == visitante) and (X.fecha == fecha) and not X.terminado:
+                X.goles1 = gl
+                X.goles2 = gv
+                X.penales1 = penales1
+                X.penales2 = penales2
+                X.terminado = True
+                X.estado = "jugado"
+
                 if X.fase != "Grupos":
                     eq_l = self.busqueda(local)
                     eq_v = self.busqueda(visitante)
-                    
-                    if gl > gv:
-                        ganador, perdedor = eq_l, eq_v
-                    elif gv > gl:
-                        ganador, perdedor = eq_v, eq_l
-                    else:
-                        # En caso de empate en goles, se define mediante la tanda de penales cargada
-                        if penales1 >= penales2:
-                            ganador, perdedor = eq_l, eq_v
-                        else:
-                            ganador, perdedor = eq_v, eq_l
-                    
-                    
-                    fases = ["Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final", "Campeón"]
-                    if X.fase in fases:
-                        idx = fases.index(X.fase)
-                        if idx < len(fases) - 1:  # evita salir del rango
-                            ganador.avance = fases[idx + 1]
-                            if ganador.avance == "Campeón":
-                                perdedor.avance = "Vicecampeón"
-                            else:
-                                ganador.avance = "Campeón"
-                                perdedor.avance = "Vicecampeón"
 
-                    return "Datos guardados con exito"
-                return "Partido no encontrado o ya jugado"
+                    if not isinstance(eq_l, str) and not isinstance(eq_v, str):
+                        if gl > gv or (gl == gv and penales1 > penales2):
+                            ganador = eq_l
+                            perdedor = eq_v
+                        elif gv > gl or (gl == gv and penales2 > penales1):
+                            ganador = eq_v
+                            perdedor = eq_l
+                        else:
+                            ganador = eq_l
+                            perdedor = eq_v
+
+                        fases = ["Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final", "Campeón"]
+                        if X.fase in fases:
+                            idx = fases.index(X.fase)
+                            if idx < len(fases) - 1:
+                                ganador.avance = fases[idx + 1]
+                                perdedor.avance = "Eliminado"
+
+                return "Datos guardados con exito"
+
+        return "Partido no encontrado o ya jugado"
 
 
     def configuracion(self):
