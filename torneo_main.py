@@ -1019,7 +1019,6 @@ class PantallaInformes:
     def __init__(self, contenedor, app):
         self.contenedor = contenedor
         self.app = app
-
         
         if len(historial_pantallas) == 0 or historial_pantallas[len(historial_pantallas) - 1] != "INFORMES":
             historial_pantallas.append("INFORMES")
@@ -1058,7 +1057,6 @@ class PantallaInformes:
         # Zona donde se renderiza el informe seleccionado
         self.f_zona = tk.Frame(self.contenedor, bg="#681345")
         self.f_zona.pack(fill="both", expand=True, padx=10, pady=10)
-
         
         self.mostrar_informe1()
 
