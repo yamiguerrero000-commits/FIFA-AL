@@ -788,16 +788,17 @@ class PantallaResultados:
                 self.ent_pl.config(state="normal")
                 self.ent_pv.config(state="normal")
             else:
-                # No hay empate, deshabilitamos penales y los limpiamos
+                # No hay empate, nos aseguramos de limpiar y deshabilitar penales
+                self.ent_pl.config(state="normal")
+                self.ent_pv.config(state="normal")
                 self.ent_pl.delete(0, "end")
                 self.ent_pv.delete(0, "end")
-                # Ponemos "0" por defecto para que la validacion final no falle
-                self.ent_pl.insert(0, "0")
-                self.ent_pv.insert(0, "0")
                 self.ent_pl.config(state="disabled")
                 self.ent_pv.config(state="disabled")
         else:
-            # Si borran los goles o escriben texto, deshabilitamos penales
+            # Si borran los goles o escriben texto, limpiamos y deshabilitamos penales
+            self.ent_pl.config(state="normal")
+            self.ent_pv.config(state="normal")
             self.ent_pl.delete(0, "end")
             self.ent_pv.delete(0, "end")
             self.ent_pl.config(state="disabled")
@@ -877,39 +878,52 @@ class PantallaResultados:
                                 "Debe registrar los resultados en orden. Seleccione el primero de la cola.")
             return
 
-
         if self.partido_seleccionado.terminado:
             messagebox.showwarning("Aviso", "Este partido ya fue registrado anteriormente.")
             return
 
-        # Obtenemos los goles, penales y tarjetas ingresados
+        # 1. OBTENEMOS Y VALIDAMOS CAMPOS SIEMPRE OBLIGATORIOS (Goles y Tarjetas)
         gl_str = self.ent_gl.get().strip()
         gv_str = self.ent_gv.get().strip()
-        pl_str = self.ent_pl.get().strip()
-        pv_str = self.ent_pv.get().strip()
         al_str = self.ent_al.get().strip()
         av_str = self.ent_av.get().strip()
         rl_str = self.ent_rl.get().strip()
         rv_str = self.ent_rv.get().strip()
 
-        # Validacion: todos los campos son obligatorios
-        if gl_str == "" or gv_str == "" or pl_str == "" or pv_str == "" or al_str == "" or av_str == "" or rl_str == "" or rv_str == "":
-            messagebox.showerror("Error", "Complete todos los campos de goles, penales y tarjetas.")
+        # Validación: campos base obligatorios
+        if gl_str == "" or gv_str == "" or al_str == "" or av_str == "" or rl_str == "" or rv_str == "":
+            messagebox.showerror("Error", "Complete todos los campos de goles y tarjetas.")
             return
 
-        # Validacion: deben ser numeros enteros
-        if not gl_str.isdigit() or not gv_str.isdigit() or not pl_str.isdigit() or not pv_str.isdigit() or not al_str.isdigit() or not av_str.isdigit() or not rl_str.isdigit() or not rv_str.isdigit():
-            messagebox.showerror("Error", "Todos los valores ingresados deben ser numeros enteros.")
+        # Validación: deben ser números enteros
+        if not (gl_str.isdigit() and gv_str.isdigit() and al_str.isdigit() and av_str.isdigit() and rl_str.isdigit() and rv_str.isdigit()):
+            messagebox.showerror("Error", "Los valores de goles y tarjetas deben ser numeros enteros.")
             return
 
         gl = int(gl_str)
         gv = int(gv_str)
-        pl = int(pl_str)
-        pv = int(pv_str)
         al = int(al_str)
         av = int(av_str)
         rl = int(rl_str)
         rv = int(rv_str)
+
+        # 2. VALIDACIÓN CONDICIONAL DE PENALES (Solo si hay empate)
+        pl = 0
+        pv = 0
+        if gl == gv:
+            pl_str = self.ent_pl.get().strip()
+            pv_str = self.ent_pv.get().strip()
+
+            if pl_str == "" or pv_str == "":
+                messagebox.showerror("Error", "El partido terminó en empate. Debe ingresar los penales.")
+                return
+
+            if not (pl_str.isdigit() and pv_str.isdigit()):
+                messagebox.showerror("Error", "Los penales deben ser numeros enteros.")
+                return
+
+            pl = int(pl_str)
+            pv = int(pv_str)
 
         # Guardamos resultado en el objeto torneo
         mensaje = torneo_actual.resultado(
@@ -938,15 +952,15 @@ class PantallaResultados:
             if gl > gv:
                 eq_local.ganados     += 1
                 eq_visitante.perdidos += 1
-                eq_local.puntos      += 3
+                eq_local.puntos       += 3
             elif gv > gl:
                 eq_visitante.ganados  += 1
                 eq_local.perdidos    += 1
                 eq_visitante.puntos  += 3
             else:
-                eq_local.empate      += 1
-                eq_visitante.empate  += 1
-                eq_local.puntos      += 1
+                eq_local.empate       += 1
+                eq_visitante.empate   += 1
+                eq_local.puntos       += 1
                 eq_visitante.puntos  += 1
 
             # Actualizamos contadores de tarjetas en los objetos de los equipos
@@ -963,10 +977,19 @@ class PantallaResultados:
             # Marcamos el partido como terminado para evitar duplicaciones futuras
             self.partido_seleccionado.terminado = True
 
-            #Sacamos el partido del frente
+            # Sacamos el partido del frente
             cola_partidos.pop(0)
 
             # Limpiamos y deshabilitamos los campos
+            self.ent_gl.config(state="normal")
+            self.ent_gv.config(state="normal")
+            self.ent_pl.config(state="normal")
+            self.ent_pv.config(state="normal")
+            self.ent_al.config(state="normal")
+            self.ent_av.config(state="normal")
+            self.ent_rl.config(state="normal")
+            self.ent_rv.config(state="normal")
+
             self.ent_gl.delete(0, "end")
             self.ent_gv.delete(0, "end")
             self.ent_pl.delete(0, "end")
